@@ -6,7 +6,7 @@ type stockRepositoryDB struct {
 	db *mongo.Collection
 }
 
-func NewStockepositoryDB(db *mongo.Collection) StockRepository {
+func NewStockRepositoryDB(db *mongo.Collection) StockRepository {
 	return stockRepositoryDB{db}
 }
 
@@ -14,12 +14,12 @@ func (r stockRepositoryDB) CreateStock(StockCollection) (string, error) {
 	return "", nil
 }
 
-func (r stockRepositoryDB) GetAllStock() ([]AllStock, error) {
-	return []AllStock{}, nil
+func (r stockRepositoryDB) GetAllStocks() ([]StockCollection, error) {
+	return []StockCollection{}, nil
 }
 
-func (r stockRepositoryDB) GetTopStock() ([]TopStock, error) {
-	return []TopStock{}, nil
+func (r stockRepositoryDB) GetTopStocks() ([]StockCollection, error) {
+	return []StockCollection{}, nil
 }
 
 func (r stockRepositoryDB) GetStock(string) (StockCollection, error) {

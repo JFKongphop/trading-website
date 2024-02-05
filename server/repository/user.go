@@ -1,29 +1,15 @@
 package repository
 
-type UserAccount struct {
-	Name         string             `json:"name"`
-	ProfileImage string             `json:"profileImage"`
-}
+import "server/model"
 
-type CreateAccount struct {
-	Name         string             `json:"name"`
-	ProfileImage string             `json:"profileImage"`
-	Email        string             `json:"email"`
-}
-
-type UserHistory struct {
-	Timestamp uint   `json:"timestamp"`
-	Name      string `json:"name"`
-	Price     uint   `json:"price"`
-	Amount    uint   `json:"amount"`
-	Status    string `json:"status"`
-}
-
+type CreateAccount = model.CreateAccount
+type UserAccount = model.UserAccount
+type UserHistory = model.UserHistory
 
 type UserRepository interface {
 	Create(CreateAccount) (string, error)
 	GetAccount(string) (UserAccount, error)
-	GetAllHistory(string) ([]UserHistory, error)
+	GetAllHistories(string) ([]UserHistory, error)
 	GetStockHistory(string) ([]UserHistory, error)
 	DeleteAccount(string, string) (string, error)
 }

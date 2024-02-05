@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"server/model"
 	"server/repository"
-	"time"
+	// "time"
 
 	"github.com/joho/godotenv"
+	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,28 +23,28 @@ type Person struct {
 	City string             `bson:"city"`
 }
 
-type UserHistory struct {
-	Timestamp uint   `bson:"timestamp"`
-	Name      string `bson:"name"`
-	Price     uint   `bson:"price"`
-	Amount    uint   `bson:"amount"`
-	Status    string `bson:"status"`
-}
+// type UserHistory struct {
+// 	Timestamp uint   `bson:"timestamp"`
+// 	Name      string `bson:"name"`
+// 	Price     uint   `bson:"price"`
+// 	Amount    uint   `bson:"amount"`
+// 	Status    string `bson:"status"`
+// }
 
-type UserStock struct {
-	Name   string `bson:"name"`
-	Amount uint   `bson:"amount"`
-}
+// type UserStock struct {
+// 	Name   string `bson:"name"`
+// 	Amount uint   `bson:"amount"`
+// }
 
-type User struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty"`
-	Name         string             `bson:"name"`
-	ProfileImage string             `bson:"profileImage"`
-	Email        string             `bson:"email"`
-	RegisterDate uint               `bson:"registerDate"`
-	History      []UserHistory      `bson:"userHistory"`
-	Stock        []UserStock        `bson:"userStock"`
-}
+// type User struct {
+// 	ID           primitive.ObjectID `bson:"_id,omitempty"`
+// 	Name         string             `bson:"name"`
+// 	ProfileImage string             `bson:"profileImage"`
+// 	Email        string             `bson:"email"`
+// 	RegisterDate uint               `bson:"registerDate"`
+// 	History      []UserHistory      `bson:"userHistory"`
+// 	Stock        []UserStock        `bson:"userStock"`
+// }
 
 type StockHistory struct {
 	ID        primitive.ObjectID `bson:"userId"`
@@ -59,6 +61,10 @@ type Stock struct {
 	History    []StockHistory     `bson:"stockHistory"`
 }
 
+type User = model.UserAccount
+type UserHistory = model.UserHistory
+type UserStock = model.UserStock
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -70,50 +76,67 @@ func main() {
 	stockColName := "stock"
 	// collName := "person"
 
-	ctx := context.Background()
+	// ctx := context.Background()
 
 	client := InitMongoDB()
 
 	// Get the database and collection
 	db := client.Database(dbName)
+	// col := db.Collection("person")
 	userCol := db.Collection(userColName)
 	stockCol := db.Collection(stockColName)
 
-	_ = repository.NewStockepositoryDB(userCol)
-	_ = repository.NewStockepositoryDB(stockCol)
+	userRepositoryDB := repository.NewUserRepositoryDB(userCol)
+	_ = repository.NewStockRepositoryDB(stockCol)
 
 
-	user := User{
-		Name:         "Kongphop",
-		ProfileImage: "helloworld",
-		Email:        "kongphopleo@gmail.com",
-		RegisterDate: uint(time.Now().Unix()),
-		History:      []UserHistory{},
-		Stock:        []UserStock{},
-	}
+	// account := model.CreateAccount{
+	// 	Name:         "dsfeiugher",
+	// 	ProfileImage: "goiregjegijor",
+	// 	Email:        "awfwefwfw@gmail.com",
+	// }
 
-	userResult, err := userCol.InsertOne(ctx, user)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("ID", userResult.InsertedID)
+	// 65bf707e040d36a26f4bf522
 
-	stock := Stock{
-		StockImage: "helloworld",
-		Name:     "KONGPHOP",
-		Sign:     "KP",
-		Price:    100,
-		History:  []StockHistory{},
-	}
+	// result, err := userRepositoryDB.Create(account)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	stockResult, err := stockCol.InsertOne(ctx, stock)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("ID", stockResult.InsertedID)
+	// fmt.Println(result)
+
+
+	// user := User{
+	// 	Name:         "dsfeiugher",
+	// 	ProfileImage: "goiregjegijor",
+	// 	Email:        "awfwefwfw@gmail.com",
+	// 	RegisterDate: uint(time.Now().Unix()),
+	// 	History:      []UserHistory{},
+	// 	Stock:        []UserStock{},
+	// }
+
+	// userResult, err := userCol.InsertOne(ctx, user)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println("ID", userResult.InsertedID)
+
+	// stock := Stock{
+	// 	StockImage: "helloworld",
+	// 	Name:     "KONGPHOP",
+	// 	Sign:     "KP",
+	// 	Price:    100,
+	// 	History:  []StockHistory{},
+	// }
+
+	// stockResult, err := stockCol.InsertOne(ctx, stock)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println("ID", stockResult.InsertedID)
 
 	// Create a person document
-	// person := Person{Name: "John Doe", Age: 30, City: "New York"}
+	// person := Person{Name: "Alice", Age: 39, City: "Bangkok"}
 
 	// // Insert the document
 	// result, err := col.InsertOne(ctx, person)
@@ -122,7 +145,7 @@ func main() {
 	// }
 	// fmt.Println("Inserted document with ID:", result.InsertedID)
 
-	// // Find all documents
+	// // // Find all documents
 	// cursor, err := col.Find(ctx, bson.M{})
 	// if err != nil {
 	// 	log.Fatal(err)
