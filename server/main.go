@@ -9,12 +9,17 @@ import (
 	"server/repository"
 	// "time"
 
+	// "time"
+
 	"github.com/joho/godotenv"
 	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+var ctx = context.Background()
+
 
 type Person struct {
 	ID   primitive.ObjectID `bson:"_id,omitempty"`
@@ -64,6 +69,7 @@ type Stock struct {
 type User = model.UserAccount
 type UserHistory = model.UserHistory
 type UserStock = model.UserStock
+type OrderRequest model.OrderRequest
 
 func main() {
 	err := godotenv.Load()
@@ -74,31 +80,87 @@ func main() {
 	dbName := "trading-system"
 	userColName := "user"
 	stockColName := "stock"
-	// collName := "person"
-
-	// ctx := context.Background()
 
 	client := InitMongoDB()
 
 	// Get the database and collection
 	db := client.Database(dbName)
-	// col := db.Collection("person")
 	userCol := db.Collection(userColName)
 	stockCol := db.Collection(stockColName)
 
 	userRepositoryDB := repository.NewUserRepositoryDB(userCol)
 	_ = repository.NewStockRepositoryDB(stockCol)
 
+	// objectId, err := primitive.ObjectIDFromHex("65bf707e040d36a26f4bf522")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// filter := bson.M{
+	// 	"_id": objectId,
+	// 	// "userStock.stockId": "65bf707e040d36a26f4bf523",
+  //   // "userStock.amount": 201,
+	// }
 
+
+	// CREATE
 	// account := model.CreateAccount{
 	// 	Name:         "dsfeiugher",
 	// 	ProfileImage: "goiregjegijor",
 	// 	Email:        "awfwefwfw@gmail.com",
 	// }
 
-	// 65bf707e040d36a26f4bf522
-
 	// result, err := userRepositoryDB.Create(account)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(result)
+
+	// GETACCOUNT
+	// result, err := userRepositoryDB.GetAccount("65bf707e040d36a26f4bf522")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(result)
+
+	// BUY
+	// orderRequest := model.OrderRequest{
+	// 	StockId: "65bf707e040d36a26f4bf523",
+	// 	UserId: "65bf707e040d36a26f4bf522",
+	// 	Price: 100,
+	// 	Amount: 50,
+	// 	OrderType: "auto", 
+	// 	OrderMethod: "buy",
+	// }
+
+	// result, err := userRepositoryDB.Buy(orderRequest)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(result)	
+
+	// SALE
+	orderRequest := model.OrderRequest{
+		StockId: "65bf707e040d36a26f4bf523",
+		UserId: "65bf707e040d36a26f4bf522",
+		Price: 100,
+		Amount: 50,
+		OrderType: "auto", 
+		OrderMethod: "sale",
+	}
+
+	result, err := userRepositoryDB.Sale(orderRequest)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(result)	
+
+	// update := bson.M{
+	// 	"$pull": bson.M{
+	// 		"userStock": bson.M{"stockId": "65bf707e040d36a26f4bf523"},
+	// 	},
+	// }
+
+	// result, err := userCol.UpdateOne(ctx, filter, update)
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -106,64 +168,6 @@ func main() {
 	// fmt.Println(result)
 
 
-	// user := User{
-	// 	Name:         "dsfeiugher",
-	// 	ProfileImage: "goiregjegijor",
-	// 	Email:        "awfwefwfw@gmail.com",
-	// 	RegisterDate: uint(time.Now().Unix()),
-	// 	History:      []UserHistory{},
-	// 	Stock:        []UserStock{},
-	// }
-
-	// userResult, err := userCol.InsertOne(ctx, user)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println("ID", userResult.InsertedID)
-
-	// stock := Stock{
-	// 	StockImage: "helloworld",
-	// 	Name:     "KONGPHOP",
-	// 	Sign:     "KP",
-	// 	Price:    100,
-	// 	History:  []StockHistory{},
-	// }
-
-	// stockResult, err := stockCol.InsertOne(ctx, stock)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println("ID", stockResult.InsertedID)
-
-	// Create a person document
-	// person := Person{Name: "Alice", Age: 39, City: "Bangkok"}
-
-	// // Insert the document
-	// result, err := col.InsertOne(ctx, person)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println("Inserted document with ID:", result.InsertedID)
-
-	// // // Find all documents
-	// cursor, err := col.Find(ctx, bson.M{})
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer cursor.Close(ctx)
-
-	// for cursor.Next(ctx) {
-	// 	var p Person
-	// 	err := cursor.Decode(&p)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	fmt.Println("Found person:", p)
-	// }
-
-	// if err := cursor.Err(); err != nil {
-	// 	log.Fatal(err)
-	// }
 }
 
 func InitMongoDB() *mongo.Client {
@@ -185,3 +189,113 @@ func InitMongoDB() *mongo.Client {
 
 	return client
 }
+
+
+// objectId, err := primitive.ObjectIDFromHex("65bf707e040d36a26f4bf522")
+// if err != nil {
+// 	log.Fatal(err)
+// }
+
+// userHistory := UserHistory{
+// 	Timestamp:   uint(time.Now().Unix()),
+// 	StockId:     "65bf707e040d36a26f4bf523",
+// 	Price:       101,
+// 	Amount:      55,
+// 	Status:      "pending",
+// 	OrderType:   "auto",
+// 	OrderMethod: "buy",
+// }
+
+// filter := bson.M{
+// 	"_id": bson.M{
+// 		"$eq": objectId,
+// 	}, 
+// 	"userStock.stockId": bson.M{
+// 		"$eq": "65bf707e040d36a26f4bf523",
+// 	},
+// }
+// update := bson.M{
+// 	"$inc": bson.M{
+// 		"userStock.$.amount": 55,
+// 	},
+// 	"$push": bson.M{
+// 		"userHistory": userHistory,
+// 	},
+// } // Increment by 55
+
+// result, err := userCol.UpdateOne(context.Background(), filter, update)
+// if err != nil {
+// 	log.Fatal(err)
+// }
+
+// fmt.Println(result.MatchedCount)
+
+
+
+// func OrderMethodOperation(db *mongo.Collection, userId primitive.ObjectID, order UserHistory) (error) {
+// 	ctx := context.Background()
+// 	// amount := order.Amount
+// 	// if order.OrderMethod == "sale" {
+// 	// 	amount = -order.Amount
+// 	// }
+
+// 	filter := bson.M{
+// 		"_id": userId,
+// 	}
+// 	var userAccount UserAccount
+// 	err := db.FindOne(ctx, filter).Decode(&userAccount)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var userStock model.UserStock
+// 	for _, stock := range userAccount.Stock {
+// 		if stock.StockId == order.StockId {
+// 			userStock = stock
+// 			break
+// 		}
+// 	}
+
+// 	if userStock.Amount == order.Amount {
+// 		update := bson.M{
+// 			"$pull": bson.M{
+// 				"userStock": bson.M{"stockId": order.StockId},
+// 			},
+// 		}
+
+// 		_, err := db.UpdateOne(ctx, filter, update)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	} else {
+// 		filter := bson.M{
+// 			"_id": bson.M{
+// 				"$eq": userId,
+// 			}, 
+// 			"userStock.stockId": bson.M{
+// 				"$eq": order.StockId,
+// 			},
+// 		}
+// 		update := bson.M{
+// 			"$push": bson.M{
+// 				"userHistory": order,
+// 			},
+// 			"$inc": bson.M{
+// 				"userStock.$.amount": amount,
+// 			},
+// 		}
+	
+// 		ctx := context.Background()
+// 		_, err := db.UpdateOne(ctx, filter, update)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 	}
+
+
+
+	
+
+// 	return nil
+// }

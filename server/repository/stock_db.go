@@ -14,6 +14,10 @@ func (r stockRepositoryDB) CreateStock(StockCollection) (string, error) {
 	return "", nil
 }
 
+func (r stockRepositoryDB) CreateStockOrder(StockHistory) (string, error) {
+	return "", nil
+}
+
 func (r stockRepositoryDB) GetAllStocks() ([]StockCollection, error) {
 	return []StockCollection{}, nil
 }
