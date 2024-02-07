@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"server/util"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -63,6 +64,7 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 		Price:       price,
 		Amount:      amount,
 		Status:      "pending",
+		Timestamp:   uint(time.Now().Unix()),
 		OrderType:   orderRequest.OrderType,
 		OrderMethod: orderRequest.OrderMethod,
 	}
@@ -146,6 +148,7 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 		Price:       price,
 		Amount:      amount,
 		Status:      "pending",
+		Timestamp:   uint(time.Now().Unix()),
 		OrderType:   orderRequest.OrderType,
 		OrderMethod: orderRequest.OrderMethod,
 	}
@@ -335,7 +338,6 @@ func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]User
 	filter := bson.M{
 		"_id": objectId,
 	}
-
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: filter}},
 		bson.D{{Key: "$unwind", Value: "$userHistory"}},
@@ -352,7 +354,7 @@ func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]User
 	}
 	defer cursor.Close(ctx)
 
-	var userHistory []UserHistory
+	var userHistories []UserHistory
 	for cursor.Next(ctx) {
 		var result bson.M
 		if err := cursor.Decode(&result); err != nil {
@@ -364,18 +366,19 @@ func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]User
 			Price:       userHistoryMap["price"].(float64),
 			Amount:      userHistoryMap["amount"].(float64),
 			Status:      userHistoryMap["status"].(string),
+			Timestamp:   userHistoryMap["timestamp"].(uint),
 			OrderType:   userHistoryMap["orderType"].(string),
 			OrderMethod: userHistoryMap["orderMethod"].(string),
 		}
 
-		userHistory = append(userHistory, history)
+		userHistories = append(userHistories, history)
 	}
 
 	if err := cursor.Err(); err != nil {
 		return []UserHistory{}, err
 	}
 
-	return userHistory, nil
+	return userHistories, nil
 }
 
 func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserStock, error) {
@@ -394,7 +397,7 @@ func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserSto
 			},
 		},
 	}
-	
+
 	var result Stock
 	opts := options.FindOne().SetProjection(projection)
 	err = r.db.FindOne(ctx, filter, opts).Decode(&result)
@@ -420,5 +423,5 @@ func (r userRepositoryDB) DeleteAccount(userId string) (string, error) {
 		return "", err
 	}
 
-	return "Successfully deleted", nil
+	return "Successfully deleted account", nil
 }

@@ -37,13 +37,13 @@ type OrderRequest struct {
 }
 
 type UserHistory struct {
-	Timestamp   primitive.Timestamp `bson:"timestamp" json:"timestamp"`
-	StockId     string              `bson:"stockId" json:"stockId"`
-	Price       float64             `bson:"price" json:"price"`
-	Amount      float64             `bson:"amount" json:"amount"`
-	Status      string              `bson:"status" json:"status"` // pending, success, cancle
-	OrderType   string              `bson:"orderType" json:"orderType"`     // auto, order
-	OrderMethod string              `bson:"orderMethod" json:"orderMethod"` // buy, sale
+	Timestamp   uint    `bson:"timestamp" json:"timestamp"`
+	StockId     string  `bson:"stockId" json:"stockId"`
+	Price       float64 `bson:"price" json:"price"`
+	Amount      float64 `bson:"amount" json:"amount"`
+	Status      string  `bson:"status" json:"status"`           // pending, success, cancle
+	OrderType   string  `bson:"orderType" json:"orderType"`     // auto, order
+	OrderMethod string  `bson:"orderMethod" json:"orderMethod"` // buy, sale
 }
 
 type UserResponse struct {

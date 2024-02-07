@@ -11,6 +11,10 @@ import (
 
 	// "time"
 
+	// "time"
+
+	// "time"
+
 	"github.com/joho/godotenv"
 	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -81,8 +85,8 @@ func main() {
 	// Get the database and collection
 	db := client.Database(dbName)
 
-	userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
-	// stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
+	// userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
+	stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
 
 	// objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
 	// if err != nil {
@@ -94,26 +98,9 @@ func main() {
   //   // "userStock.amount": 201,
 	// }
 
-	// CREATE STOCK COLLECTION
-	// stockCollection := StockCollection{
-	// 	StockImage: "yuysfguyfgswe",
-	// 	Name:       "KONGPHOP",
-	// 	Sign:       "KP",
-	// 	Price:      10,
-	// 	History:    []StockHistory{},
-	// }
-
-	// result, err := stockRepositoryDB.CreateStock(stockCollection)
-	// if err != nil {
-	// 	log.Fatal(result)
-	// }
-
-	// fmt.Println(result)
-
-
 	// CREATE
 	// account := model.CreateAccount{
-	// 	Name:         "test",
+	// 	Name:         "kongphop",
 	// 	ProfileImage: "test",
 	// 	Email:        "test@gmail.com",
 	// }
@@ -213,26 +200,97 @@ func main() {
 	// fmt.Println(result)
 
 	// DELETE ACCOUNT
-	result, err := userRepositoryDB.DeleteAccount("65c382330d619735e53b96fc")
-	if err != nil {
-		log.Fatal(result)
-	}
-
-	fmt.Println(result)
-
-
-	// update := bson.M{
-	// 	"$pull": bson.M{
-	// 		"userStock": bson.M{"stockId": "65bf707e040d36a26f4bf523"},
-	// 	},
+	// result, err := userRepositoryDB.DeleteAccount("65c382330d619735e53b96fc")
+	// if err != nil {
+	// 	log.Fatal(result)
 	// }
 
-	// result, err := userCol.UpdateOne(ctx, filter, update)
+	// fmt.Println(result)
+
+
+	// STOCK
+
+	// CREATE STOCK COLLECTION
+	// stockCollection := StockCollection{
+	// 	StockImage: "test-image",
+	// 	Name:       "TANAGUY",
+	// 	Sign:       "TNG",
+	// 	Price:      20,
+	// 	History:    []StockHistory{},
+	// }
+
+	// result, err := stockRepositoryDB.CreateStock(stockCollection)
+	// if err != nil {
+	// 	log.Fatal(result)
+	// }
+
+	// fmt.Println(result)
+
+	// GET ALL STOCK
+	// result, err := stockRepositoryDB.GetAllStocks()
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
 	// fmt.Println(result)
+
+	// CREATE STOCK ORDER
+	// stockHistory := StockHistory{
+	// 	ID: "65c39b189f5c807c54a53030",
+	// 	Timestamp: uint(time.Now().Unix()),
+	// 	Amount: 25,
+	// 	Price: 13,
+	// }
+	// result, err := stockRepositoryDB.CreateStockOrder(
+	// 	"65c39a03dfb8060d99995934",
+	// 	stockHistory,
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+	
+	// EDIT NAME
+	// result, err := stockRepositoryDB.EditName(
+	// 	"65c39a03dfb8060d99995934",
+	// 	"KONGPHOP",
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// EDIT SIGN
+	// result, err := stockRepositoryDB.EditSign(
+	// 	"65c39a03dfb8060d99995934",
+	// 	"KP",
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// SET PRICE
+	// result, err := stockRepositoryDB.SetPrice(
+	// 	"65c39a03dfb8060d99995934",
+	// 	11.11,
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// GET HISTORY STOCK
+	result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(result)
 
 
 }
