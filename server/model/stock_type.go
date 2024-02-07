@@ -3,19 +3,20 @@ package model
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type StockHistory struct {
-	ID        string  `json:"userId"`
-	Timestamp uint    `json:"timestamp"`
-	Amount    float64 `json:"amount"`
-	Price     float64 `json:"price"`
+	ID        string              `bson:"userId,omitempty" json:"userId"`
+	Timestamp primitive.Timestamp `bson:"timestamp" json:"timestamp"`
+	Amount    float64             `bson:"amount" json:"amount"`
+	Price     float64             `bson:"price" json:"price"`
 }
 
 type StockCollection struct {
-	ID         primitive.ObjectID `json:"_id"`
-	StockImage string             `json:"stockImage"`
-	Name       string             `json:"name"`
-	Sign       string             `json:"sign"`
-	Price      float64            `json:"price"`
-	History    []StockHistory     `json:"stockHistory"`
+	ID          primitive.ObjectID  `bson:"_id,omitempty"`
+	StockImage  string              `bson:"stockImage"`
+	Name        string              `bson:"name"`
+	Sign        string              `bson:"sign"`
+	Price       uint                `bson:"price"`
+	CreatedDate primitive.Timestamp `bson:"createdDate" json:"createdDate"`
+	History     []StockHistory      `bson:"stockHistory"`
 }
 
 type TopStock struct {

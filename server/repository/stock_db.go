@@ -10,8 +10,13 @@ func NewStockRepositoryDB(db *mongo.Collection) StockRepository {
 	return stockRepositoryDB{db}
 }
 
-func (r stockRepositoryDB) CreateStock(StockCollection) (string, error) {
-	return "", nil
+func (r stockRepositoryDB) CreateStock(stockCollection StockCollection) (string, error) {
+	_, err := r.db.InsertOne(ctx, stockCollection)
+	if err != nil {
+		return "", err
+	}
+
+	return "Successfullt created stock collection", nil
 }
 
 func (r stockRepositoryDB) CreateStockOrder(StockHistory) (string, error) {
@@ -34,6 +39,6 @@ func (r stockRepositoryDB) EditStock(string) (string, error) {
 	return "", nil
 }
 
-func (r stockRepositoryDB) 	DeleteStock(string) (string, error) {
+func (r stockRepositoryDB) DeleteStock(string) (string, error) {
 	return "", nil
 }

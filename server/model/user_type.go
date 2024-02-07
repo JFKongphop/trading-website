@@ -11,13 +11,14 @@ type UserStock struct {
 }
 
 type UserAccount struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"_id"`
-	Name         string             `bson:"name" json:"name"`
-	ProfileImage string             `bson:"profileImage" json:"profileImage"`
-	Email        string             `bson:"email" json:"email"`
-	RegisterDate uint               `bson:"registerDate" json:"registerDate"`
-	History      []UserHistory      `bson:"userHistory" json:"userHistory"`
-	Stock        []UserStock        `bson:"userStock" json:"userStock"`
+	ID           primitive.ObjectID  `bson:"_id,omitempty" json:"_id"`
+	Name         string              `bson:"name" json:"name"`
+	ProfileImage string              `bson:"profileImage" json:"profileImage"`
+	Email        string              `bson:"email" json:"email"`
+	RegisterDate primitive.Timestamp `bson:"registerDate" json:"registerDate"`
+	Balance      float64             `bson:"balance" json:"balance"`
+	History      []UserHistory       `bson:"userHistory" json:"userHistory"`
+	Stock        []UserStock         `bson:"userStock" json:"userStock"`
 }
 
 type CreateAccount struct {
@@ -36,13 +37,13 @@ type OrderRequest struct {
 }
 
 type UserHistory struct {
-	Timestamp   uint    `bson:"timestamp" json:"timestamp"`
-	StockId     string  `bson:"stockId" json:"stockId"`
-	Price       float64 `bson:"price" json:"price"`
-	Amount      float64 `bson:"amount" json:"amount"`
-	Status      string  `bson:"status" json:"status"`           // pending, success, cancle
-	OrderType   string  `bson:"orderType" json:"orderType"`     // auto, order
-	OrderMethod string  `bson:"orderMethod" json:"orderMethod"` // buy, sale
+	Timestamp   primitive.Timestamp `bson:"timestamp" json:"timestamp"`
+	StockId     string              `bson:"stockId" json:"stockId"`
+	Price       float64             `bson:"price" json:"price"`
+	Amount      float64             `bson:"amount" json:"amount"`
+	Status      string              `bson:"status" json:"status"` // pending, success, cancle
+	OrderType   string              `bson:"orderType" json:"orderType"`     // auto, order
+	OrderMethod string              `bson:"orderMethod" json:"orderMethod"` // buy, sale
 }
 
 type UserResponse struct {
