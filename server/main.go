@@ -7,13 +7,6 @@ import (
 	"os"
 	"server/model"
 	"server/repository"
-	// "time"
-
-	// "time"
-
-	// "time"
-
-	// "time"
 
 	"github.com/joho/godotenv"
 	// "go.mongodb.org/mongo-driver/bson"
@@ -22,8 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var ctx = context.Background()
-
+// var ctx = context.Background()
 
 type Person struct {
 	ID   primitive.ObjectID `bson:"_id,omitempty"`
@@ -79,7 +71,6 @@ func main() {
 
 	dbName := "trading-system"
 
-
 	client := InitMongoDB()
 
 	// Get the database and collection
@@ -95,7 +86,7 @@ func main() {
 	// filter := bson.M{
 	// 	"_id": objectId,
 	// 	// "userStock.stockId": "65bf707e040d36a26f4bf523",
-  //   // "userStock.amount": 201,
+	//   // "userStock.amount": 201,
 	// }
 
 	// CREATE
@@ -112,13 +103,12 @@ func main() {
 	// fmt.Println(result)
 
 	// DEPOSIT
-	// result, err := userRepositoryDB.Deposit("65c35bf2e383e16e2dd56362", 5000)
+	// result, err := userRepositoryDB.Deposit("65c39b189f5c807c54a53030", 5000)
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
 	// fmt.Println(result)
-
 
 	// WITHDRAW
 	// result, err := userRepositoryDB.Withdraw("65c30de7b654c0e7bf938081", 3000)
@@ -128,13 +118,13 @@ func main() {
 
 	// fmt.Println(result)
 
-	// BUY
+	// BUY editd id
 	// orderRequest := model.OrderRequest{
-	// 	StockId: "65c35d3188681943a5ebe11b",
-	// 	UserId: "65c35bf2e383e16e2dd56362",
-	// 	Price: 60,
-	// 	Amount: 5,
-	// 	OrderType: "auto", 
+	// 	StockId:     "65c39a12c4e3672bcbf15b0f",
+	// 	UserId:      "65c39b189f5c807c54a53030",
+	// 	Price:       60,
+	// 	Amount:      5,
+	// 	OrderType:   "auto",
 	// 	OrderMethod: "buy",
 	// }
 
@@ -142,7 +132,7 @@ func main() {
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	// fmt.Println(result)	
+	// fmt.Println(result)
 
 	// SALE
 	// orderRequest := model.OrderRequest{
@@ -150,7 +140,7 @@ func main() {
 	// 	UserId: "65c30de7b654c0e7bf938081",
 	// 	Price: 10,
 	// 	Amount: 100,
-	// 	OrderType: "auto", 
+	// 	OrderType: "auto",
 	// 	OrderMethod: "sale",
 	// }
 
@@ -158,7 +148,7 @@ func main() {
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	// fmt.Println(result)	
+	// fmt.Println(result)
 
 	// GET ACCOUNT
 	// result, err := userRepositoryDB.GetAccount("65c35825c2654a0e0346fd38")
@@ -175,28 +165,27 @@ func main() {
 
 	// fmt.Println(result)
 
-	
 	// GET STOCK HISTORIES
 	// stockId 65c35c9a832ed6ceda9a6b0f
 	// result, err := userRepositoryDB.GetStockHistory(
-	// 	"65c35bf2e383e16e2dd56362", 
+	// 	"65c35bf2e383e16e2dd56362",
 	// 	"65c35d3188681943a5ebe11b",
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	
+
 	// fmt.Println(result)
 
 	// GET STOCK AMOUNT
 	// result, err := userRepositoryDB.GetStockAmount(
-	// 	"65c35bf2e383e16e2dd56362", 
+	// 	"65c35bf2e383e16e2dd56362",
 	// 	"65c35c9a832ed6ceda9a6b0f",
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	
+
 	// fmt.Println(result)
 
 	// DELETE ACCOUNT
@@ -206,7 +195,6 @@ func main() {
 	// }
 
 	// fmt.Println(result)
-
 
 	// STOCK
 
@@ -238,11 +226,11 @@ func main() {
 	// stockHistory := StockHistory{
 	// 	ID: "65c39b189f5c807c54a53030",
 	// 	Timestamp: uint(time.Now().Unix()),
-	// 	Amount: 25,
+	// 	Amount: 5,
 	// 	Price: 13,
 	// }
 	// result, err := stockRepositoryDB.CreateStockOrder(
-	// 	"65c39a03dfb8060d99995934",
+	// 	"65c39a12c4e3672bcbf15b0f",
 	// 	stockHistory,
 	// )
 	// if err != nil {
@@ -250,7 +238,7 @@ func main() {
 	// }
 
 	// fmt.Println(result)
-	
+
 	// EDIT NAME
 	// result, err := stockRepositoryDB.EditName(
 	// 	"65c39a03dfb8060d99995934",
@@ -285,13 +273,28 @@ func main() {
 	// fmt.Println(result)
 
 	// GET HISTORY STOCK
-	result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
+	// result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// GET STOCK
+	// result, err := stockRepositoryDB.GetStock("65c39a03dfb8060d99995934")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// GET TOP STOCK
+	result, err := stockRepositoryDB.GetTopStocks()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Println(result)
-
 
 }
 
@@ -315,7 +318,6 @@ func InitMongoDB() *mongo.Client {
 	return client
 }
 
-
 // objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
 // if err != nil {
 // 	log.Fatal(err)
@@ -334,7 +336,7 @@ func InitMongoDB() *mongo.Client {
 // filter := bson.M{
 // 	"_id": bson.M{
 // 		"$eq": objectId,
-// 	}, 
+// 	},
 // 	"userStock.stockId": bson.M{
 // 		"$eq": "65bf707e040d36a26f4bf523",
 // 	},
@@ -354,8 +356,6 @@ func InitMongoDB() *mongo.Client {
 // }
 
 // fmt.Println(result.MatchedCount)
-
-
 
 // func OrderMethodOperation(db *mongo.Collection, userId primitive.ObjectID, order UserHistory) (error) {
 // 	ctx := context.Background()
@@ -396,7 +396,7 @@ func InitMongoDB() *mongo.Client {
 // 		filter := bson.M{
 // 			"_id": bson.M{
 // 				"$eq": userId,
-// 			}, 
+// 			},
 // 			"userStock.stockId": bson.M{
 // 				"$eq": order.StockId,
 // 			},
@@ -409,7 +409,7 @@ func InitMongoDB() *mongo.Client {
 // 				"userStock.$.amount": amount,
 // 			},
 // 		}
-	
+
 // 		ctx := context.Background()
 // 		_, err := db.UpdateOne(ctx, filter, update)
 // 		if err != nil {
@@ -417,10 +417,6 @@ func InitMongoDB() *mongo.Client {
 // 		}
 
 // 	}
-
-
-
-	
 
 // 	return nil
 // }

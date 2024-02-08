@@ -2,6 +2,8 @@ package repository
 
 import (
 	"errors"
+	"server/model"
+	"sort"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -16,6 +18,8 @@ type stockRepositoryDB struct {
 type StockPrice struct {
 	Price float64 `bson:"price"`
 }
+
+type StockGroup = model.StockGroup
 
 func NewStockRepositoryDB(db *mongo.Collection) StockRepository {
 	return stockRepositoryDB{db}
@@ -101,14 +105,107 @@ func (r stockRepositoryDB) GetAllStocks() ([]StockCollectionResponse, error) {
 	return stockCollections, nil
 }
 
-func (r stockRepositoryDB) GetTopStocks() ([]StockCollection, error) {
+func (r stockRepositoryDB) GetTopStocks() ([]StockGroup, error) {
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$unwind", Value: "$stockHistory"}},
+		bson.D{{Key: "$sort", Value: bson.D{{
+			Key: "stockHistory.timestamp", Value: -1,
+		}}}},
+		bson.D{{Key: "$group", Value: bson.M{
+			"_id":          "$_id",
+			"name":         bson.M{"$first": "$name"},
+			"price":        bson.M{"$first": "$price"},
+			"sign":         bson.M{"$first": "$sign"},
+			"stockImage":   bson.M{"$first": "$stockImage"},
+			"stockHistory": bson.M{"$push": "$stockHistory"},
+		}}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"_id":        1,
+			"name":       1,
+			"price":      1,
+			"sign":       1,
+			"stockImage": 1,
+			"stockHistory": bson.M{
+				"$slice": []interface{}{
+					"$stockHistory", 10,
+				},
+			},
+		}}},
+	}
 
-	return []StockCollection{}, nil
+	cursor, err := r.db.Aggregate(ctx, pipeline)
+	if err != nil {
+		return []StockGroup{}, err
+	}
+	defer cursor.Close(ctx)
+
+	var stocks []StockGroup
+	for cursor.Next(ctx) {
+		var result bson.M
+		if err := cursor.Decode(&result); err != nil {
+			return []StockGroup{}, err
+		}
+
+		histories := result["stockHistory"].(bson.A)
+
+		var volume float64 = 0
+		for _, history := range histories {
+			historyDoc := history.(bson.M)
+			amount := historyDoc["amount"].(float64)
+			price := historyDoc["price"].(float64)
+			volume += amount * price
+		}
+
+		stock := StockGroup{
+			Name:       result["name"].(string),
+			Price:      result["price"].(float64),
+			Sign:       result["sign"].(string),
+			StockImage: result["stockImage"].(string),
+			Volume:     volume,
+		}
+
+		stocks = append(stocks, stock)
+		volume = 0
+	}
+
+	sort.Slice(stocks[:], func(i, j int) bool {
+		return stocks[i].Volume > stocks[j].Volume
+	})
+
+	amountOfStock := len(stocks)
+	if amountOfStock > 10 {
+		amountOfStock = 10
+	}
+
+	var topTenStock = stocks[0:amountOfStock]
+
+	return topTenStock, nil
 }
 
-func (r stockRepositoryDB) GetStock(string) (StockCollection, error) {
+func (r stockRepositoryDB) GetStock(stockId string) (StockCollectionResponse, error) {
+	objectStockId, err := primitive.ObjectIDFromHex(stockId)
+	if err != nil {
+		return StockCollectionResponse{}, nil
+	}
 
-	return StockCollection{}, nil
+	filter := bson.M{
+		"_id": objectStockId,
+	}
+	projection := bson.M{
+		"stockImage": 1,
+		"name":       1,
+		"sign":       1,
+		"price":      1,
+	}
+
+	var stockCollection StockCollectionResponse
+	opts := options.FindOne().SetProjection(projection)
+	err = r.db.FindOne(ctx, filter, opts).Decode(&stockCollection)
+	if err != nil {
+		return StockCollectionResponse{}, nil
+	}
+
+	return stockCollection, nil
 }
 
 func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryResponse, error) {
@@ -148,8 +245,8 @@ func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryRespon
 
 		stockHistoryMap := result["stockHistory"].(bson.M)
 		history := StockHistoryResponse{
-			Price: stockHistoryMap["price"].(float64),
-			Amount: stockHistoryMap["amount"].(float64), 
+			Price:  stockHistoryMap["price"].(float64),
+			Amount: stockHistoryMap["amount"].(float64),
 		}
 
 		stockHistories = append(stockHistories, history)

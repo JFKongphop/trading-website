@@ -20,8 +20,8 @@ type StockCollection struct {
 }
 
 type TopStock struct {
-	Sign  string `json:"sign"`
-	Price float64   `json:"price"`
+	Sign  string  `json:"sign"`
+	Price float64 `json:"price"`
 }
 
 type AllStock struct {
@@ -38,6 +38,14 @@ type StockCollectionResponse struct {
 }
 
 type StockHistoryResponse struct {
-	Amount    float64 `bson:"amount" json:"amount"`
-	Price     float64 `bson:"price" json:"price"`
+	Amount float64 `bson:"amount" json:"amount"`
+	Price  float64 `bson:"price" json:"price"`
+}
+
+type StockGroup struct {
+	Name       string             `json:"name"`
+	Price      float64            `json:"price"`
+	Sign       string             `json:"sign"`
+	StockImage string             `json:"stockImage"`
+	Volume     float64            `json:"volume"`
 }
