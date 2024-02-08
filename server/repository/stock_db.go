@@ -2,8 +2,8 @@ package repository
 
 import (
 	"errors"
-	"server/model"
 	"sort"
+	"server/model"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -208,6 +208,55 @@ func (r stockRepositoryDB) GetStock(stockId string) (StockCollectionResponse, er
 	return stockCollection, nil
 }
 
+func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockCollectionResponse, error) {
+	var objectFavoriteStocks []primitive.ObjectID
+	for _, stock := range favoriteStockIds {
+		objectStockId, err := primitive.ObjectIDFromHex(stock)
+		if err != nil {
+			return []StockCollectionResponse{}, err
+		}
+		objectFavoriteStocks = append(objectFavoriteStocks, objectStockId)
+	}
+
+	filter := bson.M{
+		"_id": bson.M{
+			"$in": objectFavoriteStocks,
+		},
+	}
+	projection := bson.M{
+		"name":       1,
+		"sign":       1,
+		"price":      1,
+		"stockImage": 1,
+	}
+
+	opts := options.Find().SetProjection(projection)
+	cursor, err := r.db.Find(ctx, filter, opts)
+	if err != nil {
+		return []model.StockCollectionResponse{}, err
+	}
+	defer cursor.Close(ctx)
+
+	var favoriteStocks []StockCollectionResponse
+	for cursor.Next(ctx) {
+		var result bson.M
+		if err := cursor.Decode(&result); err != nil {
+			return []StockCollectionResponse{}, err
+		}
+
+		favoriteStock := StockCollectionResponse{
+			Name: result["name"].(string),
+			Sign: result["sign"].(string),
+			StockImage: result["stockImage"].(string),
+			Price: result["price"].(float64),
+		}
+
+		favoriteStocks = append(favoriteStocks, favoriteStock)
+	}
+
+	return favoriteStocks, nil
+}
+
 func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryResponse, error) {
 	objectStockId, err := primitive.ObjectIDFromHex(stockId)
 	if err != nil {
@@ -353,7 +402,6 @@ func (r stockRepositoryDB) DeleteStock(stockId string) (string, error) {
 
 	return "Successfully deleted stock", nil
 }
-
 
 // idValues := []string{"id1", "id2", "id3"} // Replace with your actual _id values
 

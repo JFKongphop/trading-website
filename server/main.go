@@ -234,15 +234,15 @@ func main() {
 	// fmt.Println(result)
 
 	// DELETE FAVORITE STOCK
-	result, err := userRepositoryDB.DeleteFavorite(
-		"65c4fa33835f044a5c8ed063", 
-		"65c39a03dfb8060d99995934",
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// result, err := userRepositoryDB.DeleteFavorite(
+	// 	"65c4fa33835f044a5c8ed063", 
+	// 	"65c39a03dfb8060d99995934",
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	fmt.Println(result)
+	// fmt.Println(result)
 
 	// DELETE ACCOUNT
 	// result, err := userRepositoryDB.DeleteAccount("65c382330d619735e53b96fc")
@@ -322,6 +322,15 @@ func main() {
 	// 	"65c39a03dfb8060d99995934",
 	// 	11.11,
 	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// GET FAVORITE STOCK
+	// var stocks []string = []string{"65c39a03dfb8060d99995934", "65c39a12c4e3672bcbf15b0f"}
+	// result, err := stockRepositoryDB.GetFavoriteStock(stocks)
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
