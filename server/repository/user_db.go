@@ -33,12 +33,14 @@ func NewUserRepositoryDB(db *mongo.Collection) UserRepository {
 
 func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 	user := UserAccount{
-		Name:         data.Name,
-		ProfileImage: data.ProfileImage,
-		Email:        data.Email,
-		Balance:      0,
-		History:      []UserHistory{},
-		Stock:        []UserStock{},
+		Name:           data.Name,
+		ProfileImage:   data.ProfileImage,
+		Email:          data.Email,
+		Balance:        0,
+		BalanceHistory: []BalanceHistory{},
+		Favorite:       []string{},
+		History:        []UserHistory{},
+		Stock:          []UserStock{},
 	}
 
 	_, err := r.db.InsertOne(ctx, user)
@@ -216,6 +218,12 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 
 	return "Successfully sold stock", nil
 }
+
+func (r userRepositoryDB) SetFavorite(string) (string, error)
+func (r userRepositoryDB)  GetBalanceHistory(string) ([]BalanceHistory, error)
+func (r userRepositoryDB) GetBalance(string) (float64, error)
+func (r userRepositoryDB) GetFavorite(string) ([]StockCollectionResponse, error)
+
 func (r userRepositoryDB) Deposit(userId string, depositMoney float64) (string, error) {
 	if depositMoney <= 0 {
 		return "", errors.New("invalid money")
@@ -407,6 +415,8 @@ func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserSto
 
 	return result.UserStock[0], nil
 }
+
+func (r userRepositoryDB) DeleteFavorite(string) (string, error)
 
 func (r userRepositoryDB) DeleteAccount(userId string) (string, error) {
 	objectId, err := primitive.ObjectIDFromHex(userId)

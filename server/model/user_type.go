@@ -11,14 +11,16 @@ type UserStock struct {
 }
 
 type UserAccount struct {
-	ID           primitive.ObjectID  `bson:"_id,omitempty" json:"_id"`
-	Name         string              `bson:"name" json:"name"`
-	ProfileImage string              `bson:"profileImage" json:"profileImage"`
-	Email        string              `bson:"email" json:"email"`
-	RegisterDate primitive.Timestamp `bson:"registerDate" json:"registerDate"`
-	Balance      float64             `bson:"balance" json:"balance"`
-	History      []UserHistory       `bson:"userHistory" json:"userHistory"`
-	Stock        []UserStock         `bson:"userStock" json:"userStock"`
+	ID             primitive.ObjectID  `bson:"_id,omitempty" json:"_id"`
+	Name           string              `bson:"name" json:"name"`
+	ProfileImage   string              `bson:"profileImage" json:"profileImage"`
+	Email          string              `bson:"email" json:"email"`
+	RegisterDate   primitive.Timestamp `bson:"registerDate" json:"registerDate"`
+	Balance        float64             `bson:"balance" json:"balance"`
+	BalanceHistory []BalanceHistory    `bson:"balanceHistory" json:"balanceHistory"`
+	Favorite       []string            `bson:"favorite" json:"favorite"`
+	History        []UserHistory       `bson:"userHistory" json:"userHistory"`
+	Stock          []UserStock         `bson:"userStock" json:"userStock"`
 }
 
 type CreateAccount struct {
@@ -58,4 +60,10 @@ type OrderOperation struct {
 	History     UserHistory        `json:"userHistory"`
 	Amount      float64            `json:"amount"`
 	OrderMethod string             `json:"orderMethod"`
+}
+
+type BalanceHistory struct {
+	Timestamp uint    `bson:"timestamp" json:"timestamp"`
+	Balance   float64 `bson:"balance" json:"balance"`
+	Method    string  `bson:"method" json:"method"`
 }

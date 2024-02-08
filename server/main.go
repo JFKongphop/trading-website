@@ -7,6 +7,7 @@ import (
 	"os"
 	"server/model"
 	"server/repository"
+	"server/service"
 
 	"github.com/joho/godotenv"
 	// "go.mongodb.org/mongo-driver/bson"
@@ -76,9 +77,11 @@ func main() {
 	// Get the database and collection
 	db := client.Database(dbName)
 
-	// userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
+	userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
 	stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
 
+	_ = service.NewUserService(userRepositoryDB)
+	_ = service.NewStockService(stockRepositoryDB)
 	// objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -90,17 +93,17 @@ func main() {
 	// }
 
 	// CREATE
-	// account := model.CreateAccount{
-	// 	Name:         "kongphop",
-	// 	ProfileImage: "test",
-	// 	Email:        "test@gmail.com",
-	// }
+	account := model.CreateAccount{
+		Name:         "kongphop",
+		ProfileImage: "test",
+		Email:        "test@gmail.com",
+	}
 
-	// result, err := userRepositoryDB.Create(account)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(result)
+	result, err := userRepositoryDB.Create(account)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(result)
 
 	// DEPOSIT
 	// result, err := userRepositoryDB.Deposit("65c39b189f5c807c54a53030", 5000)
@@ -289,12 +292,12 @@ func main() {
 	// fmt.Println(result)
 
 	// GET TOP STOCK
-	result, err := stockRepositoryDB.GetTopStocks()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// result, err := stockRepositoryDB.GetTopStocks()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	fmt.Println(result)
+	// fmt.Println(result)
 
 }
 
