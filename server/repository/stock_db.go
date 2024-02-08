@@ -353,3 +353,16 @@ func (r stockRepositoryDB) DeleteStock(stockId string) (string, error) {
 
 	return "Successfully deleted stock", nil
 }
+
+
+// idValues := []string{"id1", "id2", "id3"} // Replace with your actual _id values
+
+// // Construct the filter to find documents by _id values
+// filter := bson.M{"_id": bson.M{"$in": idValues}}
+
+// // Perform the find operation
+// cursor, err := collection.Find(context.Background(), filter)
+// if err != nil {
+// 	log.Fatal(err)
+// }
+// defer cursor.Close(context.Background())

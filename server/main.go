@@ -93,20 +93,23 @@ func main() {
 	// }
 
 	// CREATE
-	account := model.CreateAccount{
-		Name:         "kongphop",
-		ProfileImage: "test",
-		Email:        "test@gmail.com",
-	}
+	// account := model.CreateAccount{
+	// 	Name:         "kongphop",
+	// 	ProfileImage: "test",
+	// 	Email:        "test@gmail.com",
+	// }
 
-	result, err := userRepositoryDB.Create(account)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(result)
+	// result, err := userRepositoryDB.Create(account)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(result)
 
 	// DEPOSIT
-	// result, err := userRepositoryDB.Deposit("65c39b189f5c807c54a53030", 5000)
+	// result, err := userRepositoryDB.Deposit(
+	// 	"65c4fa33835f044a5c8ed063", 
+	// 	3000,
+	// )
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -114,9 +117,34 @@ func main() {
 	// fmt.Println(result)
 
 	// WITHDRAW
-	// result, err := userRepositoryDB.Withdraw("65c30de7b654c0e7bf938081", 3000)
+	// result, err := userRepositoryDB.Withdraw(
+	// 	"65c4fa33835f044a5c8ed063", 
+	// 	1000,
+	// )
 	// if err != nil {
 	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// SET FAVORITE
+	// result, err := userRepositoryDB.SetFavorite(
+	// 	"65c4fa33835f044a5c8ed063",
+	// 	"65c39a03dfb8060d99995934",
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	
+	// fmt.Println(result)
+
+	// GET BALANCE HISTORY
+	// result, err := userRepositoryDB.GetBalanceHistory(
+	// 	"65c4fa33835f044a5c8ed063", 
+	// 	"WITHDRAW",
+	// )
+	// if err != nil {
+	// 	log.Fatal()
 	// }
 
 	// fmt.Println(result)
@@ -180,6 +208,20 @@ func main() {
 
 	// fmt.Println(result)
 
+	// GET BALANCE
+	// result, err := userRepositoryDB.GetBalance("65c4fa33835f044a5c8ed063")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
+	// GET FAVORITE
+	// _, err = userRepositoryDB.GetFavorite("65c4fa33835f044a5c8ed063")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
 	// GET STOCK AMOUNT
 	// result, err := userRepositoryDB.GetStockAmount(
 	// 	"65c35bf2e383e16e2dd56362",
@@ -190,6 +232,17 @@ func main() {
 	// }
 
 	// fmt.Println(result)
+
+	// DELETE FAVORITE STOCK
+	result, err := userRepositoryDB.DeleteFavorite(
+		"65c4fa33835f044a5c8ed063", 
+		"65c39a03dfb8060d99995934",
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(result)
 
 	// DELETE ACCOUNT
 	// result, err := userRepositoryDB.DeleteAccount("65c382330d619735e53b96fc")
