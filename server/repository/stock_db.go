@@ -2,8 +2,8 @@ package repository
 
 import (
 	"errors"
-	"sort"
 	"server/model"
+	"sort"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -245,10 +245,10 @@ func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockC
 		}
 
 		favoriteStock := StockCollectionResponse{
-			Name: result["name"].(string),
-			Sign: result["sign"].(string),
+			Name:       result["name"].(string),
+			Sign:       result["sign"].(string),
 			StockImage: result["stockImage"].(string),
-			Price: result["price"].(float64),
+			Price:      result["price"].(float64),
 		}
 
 		favoriteStocks = append(favoriteStocks, favoriteStock)

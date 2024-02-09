@@ -44,10 +44,17 @@ func NewUserRepositoryDB(db *mongo.Collection) UserRepository {
 }
 
 func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
+	name := data.Name
+	profileImage := data.ProfileImage
+	email := data.Email
+	if len(name) == 0 || len(profileImage) == 0 || len(email) == 0 {
+		return "", ErrData
+	}
+
 	user := UserAccount{
-		Name:           data.Name,
-		ProfileImage:   data.ProfileImage,
-		Email:          data.Email,
+		Name:           name,
+		ProfileImage:   profileImage,
+		Email:         	email,
 		Balance:        0,
 		BalanceHistory: []BalanceHistory{},
 		Favorite:       []string{},
@@ -66,7 +73,7 @@ func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 	userId := orderRequest.UserId
 	if len(userId) == 0 {
-		return "", errors.New("invalid user")
+		return "", ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -155,7 +162,7 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 	userId := orderRequest.UserId
 	if len(userId) == 0 {
-		return "", errors.New("invalid user")
+		return "", ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -243,7 +250,7 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 
 func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, error) {
 	if len(userId) == 0 {
-		return "", errors.New("invalid user")
+		return "", ErrUser
 	}
 
 	if len(stockId) == 0 {
@@ -274,7 +281,7 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 
 func (r userRepositoryDB) GetBalanceHistory(userId string, method string) ([]BalanceHistory, error) {
 	if len(userId) == 0 {
-		return []BalanceHistory{}, errors.New("invalid user")
+		return []BalanceHistory{}, ErrUser
 	}
 
 	if len(method) == 0 {
@@ -349,7 +356,7 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string) ([]Bal
 
 func (r userRepositoryDB) GetBalance(userId string) (float64, error) {
 	if len(userId) == 0 {
-		return 0, errors.New("invalid user")
+		return 0, ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -376,7 +383,7 @@ func (r userRepositoryDB) GetBalance(userId string) (float64, error) {
 
 func (r userRepositoryDB) GetFavorite(userId string) ([]string, error) {
 	if len(userId) == 0 {
-		return []string{}, errors.New("invalid user")
+		return []string{}, ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -403,11 +410,11 @@ func (r userRepositoryDB) GetFavorite(userId string) ([]string, error) {
 
 func (r userRepositoryDB) Deposit(userId string, depositMoney float64) (string, error) {
 	if depositMoney <= 0 {
-		return "", errors.New("invalid money")
+		return "", ErrMoney
 	}
 
 	if len(userId) == 0 {
-		return "", errors.New("invalid user")
+		return "", ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -443,11 +450,11 @@ func (r userRepositoryDB) Deposit(userId string, depositMoney float64) (string, 
 
 func (r userRepositoryDB) Withdraw(userId string, withdrawMoney float64) (string, error) {
 	if withdrawMoney <= 0 {
-		return "", errors.New("invalid money")
+		return "", ErrMoney
 	}
 
 	if len(userId) == 0 {
-		return "", errors.New("invalid user")
+		return "", ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -494,7 +501,7 @@ func (r userRepositoryDB) Withdraw(userId string, withdrawMoney float64) (string
 
 func (r userRepositoryDB) GetAccount(userId string) (userAccount UserAccount, err error) {
 	if len(userId) == 0 {
-		return UserAccount{}, errors.New("invalid user")
+		return UserAccount{}, ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -515,7 +522,7 @@ func (r userRepositoryDB) GetAccount(userId string) (userAccount UserAccount, er
 
 func (r userRepositoryDB) GetAllHistories(userId string) ([]UserHistory, error) {
 	if len(userId) == 0 {
-		return []UserHistory{}, errors.New("invalid user")
+		return []UserHistory{}, ErrUser
 	}
 	
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -544,11 +551,11 @@ func (r userRepositoryDB) GetAllHistories(userId string) ([]UserHistory, error) 
 
 func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]UserHistory, error) {
 	if len(userId) == 0 {
-		return []UserHistory{}, errors.New("invalid user")
+		return []UserHistory{}, ErrUser
 	}
 
 	if len(stockId) == 0 {
-		return []UserHistory{}, errors.New("invalid stock")
+		return []UserHistory{}, ErrStock
 	}
 	
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -604,11 +611,11 @@ func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]User
 
 func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserStock, error) {
 	if len(userId) == 0 {
-		return UserStock{}, errors.New("invalid user")
+		return UserStock{}, ErrUser
 	}
 
 	if len(stockId) == 0 {
-		return UserStock{}, errors.New("invalid stock")
+		return UserStock{}, ErrStock
 	}
 	
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -639,11 +646,11 @@ func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserSto
 
 func (r userRepositoryDB) DeleteFavorite(userId string, stockId string) (string, error) {
 	if len(userId) == 0 {
-		return "", errors.New("invalid user")
+		return "", ErrUser
 	}
 
 	if len(stockId) == 0 {
-		return "", errors.New("invalid stock")
+		return "", ErrStock
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -670,7 +677,7 @@ func (r userRepositoryDB) DeleteFavorite(userId string, stockId string) (string,
 
 func (r userRepositoryDB) DeleteAccount(userId string) (string, error) {
 	if len(userId) == 0 {
-		return "", errors.New("invalid user")
+		return "", ErrUser
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)

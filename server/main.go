@@ -8,6 +8,7 @@ import (
 	"server/model"
 	"server/repository"
 	"server/service"
+	"time"
 
 	"github.com/joho/godotenv"
 	// "go.mongodb.org/mongo-driver/bson"
@@ -93,17 +94,17 @@ func main() {
 	// }
 
 	// CREATE
-	// account := model.CreateAccount{
-	// 	Name:         "kongphop",
-	// 	ProfileImage: "test",
-	// 	Email:        "test@gmail.com",
-	// }
+	account := model.CreateAccount{
+		Name:         "kongphop",
+		ProfileImage: "test",
+		Email:        "test@gmail.com",
+	}
 
-	// result, err := userRepositoryDB.Create(account)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(result)
+	result, err := userRepositoryDB.Create(account)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(result)
 
 	// DEPOSIT
 	// result, err := userRepositoryDB.Deposit(
@@ -364,7 +365,9 @@ func main() {
 }
 
 func InitMongoDB() *mongo.Client {
-	ctx := context.Background()
+	// ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
 	uri := os.Getenv("MONGO_URI")
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
@@ -372,7 +375,6 @@ func InitMongoDB() *mongo.Client {
 		fmt.Println("a")
 		panic(err)
 	}
-	// defer client.Disconnect(ctx)
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
