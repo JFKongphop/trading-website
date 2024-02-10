@@ -2,7 +2,6 @@ package util
 
 import (
 	"context"
-	// "fmt"
 	"server/model"
 	// "strings"
 
@@ -16,11 +15,6 @@ type UserStock = model.UserStock
 func CheckValidStock(db *mongo.Collection, userId primitive.ObjectID, stockId string) (bool, UserStock, float64, error) {
 	filter := bson.M{
 		"_id": userId,
-		// "userStock": bson.M{
-		// 	"$elemMatch": bson.M{
-		// 		"stockId": stockId,
-		// 	},
-		// },
 	}
 	
 	validStock := false
@@ -30,19 +24,9 @@ func CheckValidStock(db *mongo.Collection, userId primitive.ObjectID, stockId st
 	if err != nil {
 		return validStock, UserStock{}, userAccount.Balance, err
 	}
-	// if err != nil {
-	// 	messageError := err.Error()
-	// 	if strings.Contains(messageError, "no documents in result") {
-	// 		validStock = false
-	// 	} else {
-	// 		return validStock, UserStock{}, nil
-	// 	}
-	// }
-
-	// fmt.Println(userAccount.Stock)
 
 	if len(userAccount.Stock) == 0 {
-		return validStock, UserStock{}, userAccount.Balance, err
+		return validStock, UserStock{}, userAccount.Balance, nil
 	}
 
 	var userStock UserStock

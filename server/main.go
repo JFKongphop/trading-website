@@ -94,17 +94,17 @@ func main() {
 	// }
 
 	// CREATE
-	account := model.CreateAccount{
-		Name:         "kongphop",
-		ProfileImage: "test",
-		Email:        "test@gmail.com",
-	}
+	// account := model.CreateAccount{
+	// 	Name:         "kongphop",
+	// 	ProfileImage: "test",
+	// 	Email:        "test@gmail.com",
+	// }
 
-	result, err := userRepositoryDB.Create(account)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(result)
+	// result, err := userRepositoryDB.Create(account)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(result)
 
 	// DEPOSIT
 	// result, err := userRepositoryDB.Deposit(

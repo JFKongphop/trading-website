@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"server/errs"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,12 +15,12 @@ func InitMongoDB(uri string) (*mongo.Client, error) {
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		return nil, ErrDB
+		return nil, errs.ErrDB
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, ErrDB
+		return nil, errs.ErrDB
 	}
 
 	return client, nil

@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"server/errs"
 	"server/util"
 	"time"
 
@@ -39,6 +39,17 @@ type UserFavorite struct {
 	Favorite []string `bson:"favorite"`
 }
 
+var (
+	ErrData = errs.ErrData
+	ErrUser = errs.ErrUser
+	ErrMoney = errs.ErrMoney
+	ErrBalance = errs.ErrBalance
+	ErrOrderType = errs.ErrOrderType
+	ErrOrderMethod = errs.ErrOrderMethod
+	ErrInvalidStock = errs.ErrInvalidStock
+	ErrNotEnoughStock = errs.ErrNotEnoughStock
+) 
+
 func NewUserRepositoryDB(db *mongo.Collection) UserRepository {
 	return userRepositoryDB{db}
 }
@@ -72,18 +83,37 @@ func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 
 func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 	userId := orderRequest.UserId
+	stockId := orderRequest.StockId
+	amount := orderRequest.Amount
+	price := orderRequest.Price
+	orderType := orderRequest.OrderType
+	OrderMethod := orderRequest.OrderMethod
+
 	if len(userId) == 0 {
 		return "", ErrUser
+	}
+
+	if 
+		(len(stockId) == 0) || 
+		(len(orderType) == 0) || 
+		(len(OrderMethod) == 0) || 
+		(amount <= 0) || 
+		(price <= 0) {
+		return "", ErrData
+	}
+
+	if orderType != "auto" && orderType != "order" {
+		return "", ErrOrderType
+	}
+
+	if OrderMethod != "buy" {
+		return "", ErrOrderMethod
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
 		return "", err
 	}
-
-	stockId := orderRequest.StockId
-	amount := orderRequest.Amount
-	price := orderRequest.Price
 
 	userHistory := UserHistory{
 		StockId:     stockId,
@@ -102,7 +132,7 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 
 	stockValue := price * amount
 	if stockValue > balance {
-		return "", errors.New("balance is not enough")
+		return "", ErrBalance
 	}
 
 	if validStock {
@@ -161,18 +191,37 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 
 func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 	userId := orderRequest.UserId
+	stockId := orderRequest.StockId
+	amount := orderRequest.Amount
+	price := orderRequest.Price
+	orderType := orderRequest.OrderType
+	OrderMethod := orderRequest.OrderMethod
+
 	if len(userId) == 0 {
 		return "", ErrUser
+	}
+
+	if 
+		(len(stockId) == 0) || 
+		(len(orderType) == 0) || 
+		(len(OrderMethod) == 0) || 
+		(amount <= 0) || 
+		(price <= 0) {
+		return "", ErrData
+	}
+
+	if orderType != "auto" && orderType != "order" {
+		return "", ErrOrderType
+	}
+
+	if OrderMethod != "sale" {
+		return "", ErrOrderMethod
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
 		return "", err
 	}
-
-	stockId := orderRequest.StockId
-	amount := orderRequest.Amount
-	price := orderRequest.Price
 
 	userHistory := UserHistory{
 		StockId:     stockId,
@@ -190,7 +239,7 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 	}
 
 	if amount > userStock.Amount {
-		return "", errors.New("stock not enough")
+		return "", errs.ErrNotEnoughStock
 	}
 
 	stockValue := price * amount
@@ -239,10 +288,10 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 				return "", err
 			}
 		} else {
-			return "", errors.New("not enough stock")
+			return "", ErrNotEnoughStock
 		}
 	} else {
-		return "", errors.New("invalid stock")
+		return "", ErrInvalidStock
 	}
 
 	return "Successfully sold stock", nil
@@ -254,7 +303,7 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 	}
 
 	if len(stockId) == 0 {
-		return "", errors.New("invalid stock")
+		return "", ErrInvalidStock
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -285,7 +334,7 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string) ([]Bal
 	}
 
 	if len(method) == 0 {
-		return []BalanceHistory{}, errors.New("invalid method")
+		return []BalanceHistory{}, ErrOrderMethod
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -326,6 +375,8 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string) ([]Bal
 		    "balanceHistory": 1,
 		  }}},
 		}
+	} else {
+		return []BalanceHistory{}, ErrOrderMethod
 	}
 
 	var balanceHistories []BalanceHistory
@@ -479,7 +530,7 @@ func (r userRepositoryDB) Withdraw(userId string, withdrawMoney float64) (string
 	}
 
 	if userAccount.Balance < withdrawMoney {
-		return "", errors.New("balance not enough")
+		return "", ErrBalance
 	}
 
 	update := bson.M{
@@ -555,7 +606,7 @@ func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]User
 	}
 
 	if len(stockId) == 0 {
-		return []UserHistory{}, ErrStock
+		return []UserHistory{}, ErrInvalidStock
 	}
 	
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -615,7 +666,7 @@ func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserSto
 	}
 
 	if len(stockId) == 0 {
-		return UserStock{}, ErrStock
+		return UserStock{}, ErrInvalidStock
 	}
 	
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
@@ -650,7 +701,7 @@ func (r userRepositoryDB) DeleteFavorite(userId string, stockId string) (string,
 	}
 
 	if len(stockId) == 0 {
-		return "", ErrStock
+		return "", ErrInvalidStock
 	}
 
 	objectUserId, err := primitive.ObjectIDFromHex(userId)
