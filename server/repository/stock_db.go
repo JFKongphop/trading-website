@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"errors"
+	"server/errs"
 	"server/model"
 	"sort"
 
@@ -311,7 +311,7 @@ func (r stockRepositoryDB) SetPrice(stockId string, price float64) (string, erro
 	}
 
 	if price <= 0 {
-		return "", errors.New("invalid price")
+		return "", errs.ErrPrice
 	}
 
 	filter := bson.M{
@@ -338,7 +338,7 @@ func (r stockRepositoryDB) EditName(stockId string, name string) (string, error)
 	}
 
 	if len(name) == 0 {
-		return "", errors.New("invalid name")
+		return "", errs.ErrName
 	}
 
 	filter := bson.M{
@@ -365,7 +365,7 @@ func (r stockRepositoryDB) EditSign(stockId string, sign string) (string, error)
 	}
 
 	if len(sign) == 0 {
-		return "", errors.New("invalid sign")
+		return "", errs.ErrSign
 	}
 
 	filter := bson.M{

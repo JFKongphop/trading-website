@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func InitUseRealrRepo() repository.UserRepository {
+func InitUserRepo() repository.UserRepository {
 	client, _ := repository.InitMongoDB("mongodb://localhost:27017/trading-system")
 	db := client.Database("trading-system")
 	collection := db.Collection("user")
@@ -21,13 +21,12 @@ func InitUseRealrRepo() repository.UserRepository {
 
 	return userRepo
 }
- 
 
 type CreateAccount = repository.CreateAccount
 type OrderRequest = model.OrderRequest
 type UserHistory = model.UserHistory
 
-var userRepo = InitUseRealrRepo()
+var userRepo = InitUserRepo()
 var userIdTesting = "65c896695ec42b4f4f77af63"
 var stockIdTesting = "65c39a12c4e3672bcbf15b0f"
 var (
