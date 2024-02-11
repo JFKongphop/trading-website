@@ -591,9 +591,9 @@ func TestGetAllHistories(t *testing.T)	{
 	})
 }
 
-func TestGetStockHistory(t *testing.T) {
+func TestGetUserStockHistory(t *testing.T) {
 	t.Run("Error invalid user", func(t *testing.T) {
-		_, err := userRepo.GetStockHistory(
+		_, err := userRepo.GetUserStockHistory(
 			"", 
 			stockIdTesting, 
 			0,
@@ -603,7 +603,7 @@ func TestGetStockHistory(t *testing.T) {
 	})
 
 	t.Run("Error invalid stock", func(t *testing.T) {
-		_, err := userRepo.GetStockHistory(
+		_, err := userRepo.GetUserStockHistory(
 			"65c8993c48096b5150cee5d6", 
 			"", 
 			0,
@@ -613,7 +613,7 @@ func TestGetStockHistory(t *testing.T) {
 	})
 
 	t.Run("Error convert userId to objectId", func(t *testing.T) {
-		_, err := userRepo.GetStockHistory(
+		_, err := userRepo.GetUserStockHistory(
 			"test", 
 			stockIdTesting, 
 			0,
@@ -623,7 +623,7 @@ func TestGetStockHistory(t *testing.T) {
 	})
 
 	t.Run("Get stock history", func(t *testing.T) {
-		actual, _ := userRepo.GetStockHistory(
+		actual, _ := userRepo.GetUserStockHistory(
 			"65c8993c48096b5150cee5d6", 
 			stockIdTesting, 
 			0,

@@ -640,7 +640,7 @@ func (r userRepositoryDB) GetAllHistories(userId string, start uint) ([]UserHist
 	return result.UserHistory, nil
 }
 
-func (r userRepositoryDB) GetStockHistory(userId string, stockId string, skip uint) ([]UserHistory, error) {
+func (r userRepositoryDB) GetUserStockHistory(userId string, stockId string, skip uint) ([]UserHistory, error) {
 	if len(userId) == 0 {
 		return []UserHistory{}, ErrUser
 	}

@@ -24,7 +24,7 @@ type UserRepository interface {
 	GetFavorite(string) ([]string, error)
 	GetAccount(string) (UserAccount, error)
 	GetAllHistories(string, uint) ([]UserHistory, error)
-	GetStockHistory(string, string, uint) ([]UserHistory, error)
+	GetUserStockHistory(string, string, uint) ([]UserHistory, error)
 	GetStockAmount(string, string) (UserStock, error) 
 	DeleteFavorite(string, string) (string, error)
 	DeleteAccount(string) (string, error)
