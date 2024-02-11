@@ -39,7 +39,7 @@ type OrderRequest struct {
 }
 
 type UserHistory struct {
-	Timestamp   uint    `bson:"timestamp" json:"timestamp"`
+	Timestamp   int64    `bson:"timestamp" json:"timestamp"`
 	StockId     string  `bson:"stockId" json:"stockId"`
 	Price       float64 `bson:"price" json:"price"`
 	Amount      float64 `bson:"amount" json:"amount"`

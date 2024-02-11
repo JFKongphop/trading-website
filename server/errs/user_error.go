@@ -12,4 +12,5 @@ var (
 	ErrNotEnoughStock = errors.New("stock not enough")
 	ErrOrderType = errors.New("invalid order type")
 	ErrOrderMethod = errors.New("invalid order method")
+	ErrFavoriteStock = errors.New("already set favorite stock")
 )

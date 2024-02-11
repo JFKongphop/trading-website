@@ -4,7 +4,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type StockHistory struct {
 	ID        string  `bson:"userId,omitempty" json:"userId"`
-	Timestamp uint    `bson:"timestamp" json:"timestamp"`
+	Timestamp int64    `bson:"timestamp" json:"timestamp"`
 	Amount    float64 `bson:"amount" json:"amount"`
 	Price     float64 `bson:"price" json:"price"`
 }

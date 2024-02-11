@@ -39,6 +39,10 @@ type UserFavorite struct {
 	Favorite []string `bson:"favorite"`
 }
 
+type ValidStock struct {
+	Stock []string `bson:"favorite"`
+}
+
 var (
 	ErrData = errs.ErrData
 	ErrUser = errs.ErrUser
@@ -48,6 +52,7 @@ var (
 	ErrOrderMethod = errs.ErrOrderMethod
 	ErrInvalidStock = errs.ErrInvalidStock
 	ErrNotEnoughStock = errs.ErrNotEnoughStock
+	ErrFavoriteStock = errs.ErrFavoriteStock
 ) 
 
 func NewUserRepositoryDB(db *mongo.Collection) UserRepository {
@@ -120,7 +125,7 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 		Price:       price,
 		Amount:      amount,
 		Status:      "pending",
-		Timestamp:   uint(time.Now().Unix()),
+		Timestamp:   int64(time.Now().Unix()),
 		OrderType:   orderRequest.OrderType,
 		OrderMethod: orderRequest.OrderMethod,
 	}
@@ -228,7 +233,7 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 		Price:       price,
 		Amount:      amount,
 		Status:      "pending",
-		Timestamp:   uint(time.Now().Unix()),
+		Timestamp:   int64(time.Now().Unix()),
 		OrderType:   orderRequest.OrderType,
 		OrderMethod: orderRequest.OrderMethod,
 	}
@@ -314,6 +319,40 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 	filter := bson.M{
 		"_id": objectUserId,
 	}
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: filter}},
+		bson.D{{Key: "$unwind", Value: "$favorite"}},
+		bson.D{{Key: "$match", Value: bson.M{
+			"favorite": stockId,
+		}}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"favorite": 1,
+		}}},
+	}
+
+
+	cursor, err := r.db.Aggregate(ctx, pipeline)
+	if err != nil {
+		return "", err 
+	}
+	defer cursor.Close(ctx)
+
+	validStock := true
+	for cursor.Next(ctx) {
+		var result bson.M
+		if err := cursor.Decode(&result); err != nil {
+			return "", err  
+		}
+
+		if len(result["favorite"].(string)) == 0 {
+			validStock = false
+		}
+	}
+
+	if validStock {
+		return "", ErrFavoriteStock
+	}
+
 	update := bson.M{
 		"$push": bson.M{
 			"favorite": stockId,
@@ -328,7 +367,7 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 	return "Successfully set favorite stock", nil
 }
 
-func (r userRepositoryDB) GetBalanceHistory(userId string, method string) ([]BalanceHistory, error) {
+func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip uint) ([]BalanceHistory, error) {
 	if len(userId) == 0 {
 		return []BalanceHistory{}, ErrUser
 	}
@@ -353,7 +392,7 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string) ([]Bal
 		  bson.D{{Key: "$sort", Value: bson.D{
 		    {Key: "balanceHistory.timestamp", Value: -1},
 		  }}},
-			// bson.D{{Key: "$skip", Value: 1}},
+			bson.D{{Key: "$skip", Value: skip}},
 			bson.D{{Key: "$limit", Value: 3}},
 		  bson.D{{Key: "$project", Value: bson.M{
 		    "balanceHistory": 1,
@@ -369,7 +408,7 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string) ([]Bal
 		  bson.D{{Key: "$sort", Value: bson.D{
 		    {Key: "balanceHistory.timestamp", Value: -1},
 		  }}},
-			// bson.D{{Key: "$skip", Value: 1}},
+			bson.D{{Key: "$skip", Value: skip}},
 			bson.D{{Key: "$limit", Value: 1}},
 		  bson.D{{Key: "$project", Value: bson.M{
 		    "balanceHistory": 1,
@@ -571,7 +610,7 @@ func (r userRepositoryDB) GetAccount(userId string) (userAccount UserAccount, er
 	return userAccount, nil
 }
 
-func (r userRepositoryDB) GetAllHistories(userId string) ([]UserHistory, error) {
+func (r userRepositoryDB) GetAllHistories(userId string, start uint) ([]UserHistory, error) {
 	if len(userId) == 0 {
 		return []UserHistory{}, ErrUser
 	}
@@ -581,12 +620,13 @@ func (r userRepositoryDB) GetAllHistories(userId string) ([]UserHistory, error) 
 		return []UserHistory{}, err
 	}
 
+	stop := start + 10
 	filter := bson.M{
 		"_id": objectUserId,
 	}
 	projection := bson.M{
 		"userHistory": bson.M{
-			"$slice": []int{0, 1},
+			"$slice": []int{int(start), int(stop)},
 		},
 	}
 
@@ -600,7 +640,7 @@ func (r userRepositoryDB) GetAllHistories(userId string) ([]UserHistory, error) 
 	return result.UserHistory, nil
 }
 
-func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]UserHistory, error) {
+func (r userRepositoryDB) GetStockHistory(userId string, stockId string, skip uint) ([]UserHistory, error) {
 	if len(userId) == 0 {
 		return []UserHistory{}, ErrUser
 	}
@@ -621,8 +661,11 @@ func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]User
 		bson.D{{Key: "$match", Value: filter}},
 		bson.D{{Key: "$unwind", Value: "$userHistory"}},
 		bson.D{{Key: "$match", Value: bson.M{"userHistory.stockId": stockId}}},
+		bson.D{{Key: "$sort", Value: bson.D{{
+			Key: "userHistory.timestamp", Value: -1,
+		}}}},
 		// pagination
-		// bson.D{{Key: "$skip", Value: 1}},
+		bson.D{{Key: "$skip", Value: skip}},
 		bson.D{{Key: "$limit", Value: 10}},
 		bson.D{{Key: "$project", Value: bson.M{"userHistory": 1}}},
 	}
@@ -645,7 +688,7 @@ func (r userRepositoryDB) GetStockHistory(userId string, stockId string) ([]User
 			Price:       userHistoryMap["price"].(float64),
 			Amount:      userHistoryMap["amount"].(float64),
 			Status:      userHistoryMap["status"].(string),
-			Timestamp:   userHistoryMap["timestamp"].(uint),
+			Timestamp:   userHistoryMap["timestamp"].(int64),
 			OrderType:   userHistoryMap["orderType"].(string),
 			OrderMethod: userHistoryMap["orderMethod"].(string),
 		}

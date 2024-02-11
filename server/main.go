@@ -106,10 +106,10 @@ func main() {
 	// }
 	// fmt.Println(result)
 
-	// DEPOSIT
+	// // DEPOSIT
 	// result, err := userRepositoryDB.Deposit(
-	// 	"65c4fa33835f044a5c8ed063", 
-	// 	3000,
+	// 	"65c8993c48096b5150cee5d6", 
+	// 	5000,
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -117,9 +117,9 @@ func main() {
 
 	// fmt.Println(result)
 
-	// WITHDRAW
-	// result, err := userRepositoryDB.Withdraw(
-	// 	"65c4fa33835f044a5c8ed063", 
+	// // WITHDRAW
+	// result, err = userRepositoryDB.Withdraw(
+	// 	"65c8993c48096b5150cee5d6", 
 	// 	1000,
 	// )
 	// if err != nil {
@@ -129,15 +129,15 @@ func main() {
 	// fmt.Println(result)
 
 	// SET FAVORITE
-	// result, err := userRepositoryDB.SetFavorite(
-	// 	"65c4fa33835f044a5c8ed063",
-	// 	"65c39a03dfb8060d99995934",
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	result, err := userRepositoryDB.SetFavorite(
+		"65c8993c48096b5150cee5d6",
+		"65c39a12c4e3672bcbf15b0f",
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 	
-	// fmt.Println(result)
+	fmt.Println(result)
 
 	// GET BALANCE HISTORY
 	// result, err := userRepositoryDB.GetBalanceHistory(
@@ -153,9 +153,9 @@ func main() {
 	// BUY editd id
 	// orderRequest := model.OrderRequest{
 	// 	StockId:     "65c39a12c4e3672bcbf15b0f",
-	// 	UserId:      "65c39b189f5c807c54a53030",
+	// 	UserId:      "65c8993c48096b5150cee5d6",
 	// 	Price:       60,
-	// 	Amount:      5,
+	// 	Amount:      8,
 	// 	OrderType:   "auto",
 	// 	OrderMethod: "buy",
 	// }
@@ -183,11 +183,11 @@ func main() {
 	// fmt.Println(result)
 
 	// GET ACCOUNT
-	// result, err := userRepositoryDB.GetAccount("65c35825c2654a0e0346fd38")
+	// result, err := userRepositoryDB.GetAccount("65c8993c48096b5150cee5d6")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	// fmt.Println(result)
+	// fmt.Println(result.Favorite)
 
 	// GET HISTORIES
 	// result, err := userRepositoryDB.GetAllHistories("65c30de7b654c0e7bf938081")
@@ -200,8 +200,9 @@ func main() {
 	// GET STOCK HISTORIES
 	// stockId 65c35c9a832ed6ceda9a6b0f
 	// result, err := userRepositoryDB.GetStockHistory(
-	// 	"65c35bf2e383e16e2dd56362",
-	// 	"65c35d3188681943a5ebe11b",
+	// 	"65c8993c48096b5150cee5d6",
+	// 	"65c39a12c4e3672bcbf15b0f",
+	// 	0,
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
