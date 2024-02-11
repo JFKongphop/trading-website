@@ -39,6 +39,7 @@ var (
 	ErrOrderMethod = errs.ErrOrderMethod	
 	ErrNotEnoughStock = errs.ErrNotEnoughStock
 	ErrInvalidStock = errs.ErrInvalidStock
+	ErrFavoriteStock = errs.ErrFavoriteStock
 ) 
 
 type mockCollection struct {
@@ -158,6 +159,14 @@ func TestWithdraw(t *testing.T) {
 		assert.Equal(t, err.Error(), "the provided hex string is not a valid ObjectID")
 	})
 
+	t.Run("Error no documents in result", func(t *testing.T) {
+		depositMoney := 1
+
+		_, err := userRepo.Withdraw("65c896695ec42b4f4f77af61", float64(depositMoney))
+
+		assert.Equal(t, err.Error(), "mongo: no documents in result")
+	})
+
 	t.Run("Error balance not enough", func(t *testing.T) {
 		withdrawMoney := 1_000_000
 
@@ -250,6 +259,21 @@ func TestBuy(t *testing.T) {
 		_, err := userRepo.Buy(orderRequest)
 
 		assert.Equal(t, err.Error(), "the provided hex string is not a valid ObjectID")
+	})
+
+	t.Run("Error no documents in result", func(t *testing.T) {
+		orderRequest := OrderRequest{
+			StockId:     stockIdTesting,
+			UserId:      "65c896695ec42b4f4f77af61",
+			Price:       60,
+			Amount:      5,
+			OrderType:   "auto",
+			OrderMethod: "buy",
+		}
+
+		_, err := userRepo.Buy(orderRequest)
+
+		assert.Equal(t, err.Error(), "mongo: no documents in result")
 	})
 
 	t.Run("Error balance not enough", func(t *testing.T) {
@@ -360,6 +384,21 @@ func TestSale(t *testing.T) {
 		assert.Equal(t, err.Error(), "the provided hex string is not a valid ObjectID")
 	})
 
+	t.Run("Error no documents in result", func(t *testing.T) {
+		orderRequest := OrderRequest{
+			StockId:     stockIdTesting,
+			UserId:      "65c896695ec42b4f4f77af61",
+			Price:       60,
+			Amount:      5,
+			OrderType:   "auto",
+			OrderMethod: "sale",
+		}
+
+		_, err := userRepo.Sale(orderRequest)
+
+		assert.Equal(t, err.Error(), "mongo: no documents in result")
+	})
+
 	t.Run("Error balance not enough", func(t *testing.T) {
 		orderRequest := OrderRequest{
 			StockId:     stockIdTesting,
@@ -409,6 +448,12 @@ func TestSetFavorite(t *testing.T) {
 		_, err := userRepo.SetFavorite("test", stockIdTesting)
 
 		assert.Equal(t, err.Error(), "the provided hex string is not a valid ObjectID")
+	})
+
+	t.Run("Error alreay set favorite stock", func(t *testing.T) {
+		_, err := userRepo.SetFavorite("65c896695ec42b4f4f77af61", stockIdTesting)
+
+		assert.ErrorIs(t, err, ErrFavoriteStock)	
 	})
 
 	t.Run("Successfully set favorite stock", func(t *testing.T) {
