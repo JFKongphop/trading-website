@@ -129,15 +129,15 @@ func main() {
 	// fmt.Println(result)
 
 	// SET FAVORITE
-	result, err := userRepositoryDB.SetFavorite(
-		"65c8993c48096b5150cee5d6",
-		"65c39a12c4e3672bcbf15b0f",
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// result, err := userRepositoryDB.SetFavorite(
+	// 	"65c8993c48096b5150cee5d6",
+	// 	"65c39a12c4e3672bcbf15b0f",
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 	
-	fmt.Println(result)
+	// fmt.Println(result)
 
 	// GET BALANCE HISTORY
 	// result, err := userRepositoryDB.GetBalanceHistory(
@@ -340,12 +340,12 @@ func main() {
 	// fmt.Println(result)
 
 	// GET HISTORY STOCK
-	// result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// fmt.Println(result)
+	fmt.Println(result)
 
 	// GET STOCK
 	// result, err := stockRepositoryDB.GetStock("65c39a03dfb8060d99995934")

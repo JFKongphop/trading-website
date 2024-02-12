@@ -4,6 +4,7 @@ import (
 	"server/errs"
 	"server/model"
 	"sort"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,11 +22,23 @@ type StockPrice struct {
 
 type StockGroup = model.StockGroup
 
+var (
+	ErrPrice = errs.ErrPrice
+	ErrSign = errs.ErrSign
+)
+
 func NewStockRepositoryDB(db *mongo.Collection) StockRepository {
 	return stockRepositoryDB{db}
 }
 
 func (r stockRepositoryDB) CreateStock(stockCollection StockCollection) (string, error) {
+	if len(stockCollection.StockImage) == 0 || 
+		len(stockCollection.Sign) == 0 || 
+		len(stockCollection.Name) == 0 ||
+		stockCollection.Price < 1 {
+		return "", ErrData
+	}
+
 	_, err := r.db.InsertOne(ctx, stockCollection)
 	if err != nil {
 		return "", err
@@ -35,6 +48,18 @@ func (r stockRepositoryDB) CreateStock(stockCollection StockCollection) (string,
 }
 
 func (r stockRepositoryDB) CreateStockOrder(stockId string, stockOrder StockHistory) (string, error) {
+	if len(stockId) == 0 {
+		return "", ErrInvalidStock
+	}
+
+	if len(stockOrder.ID) == 0 || 
+		stockOrder.Amount == 0 || 
+		stockOrder.Price == 0 {
+		return "", ErrData
+	}
+
+	stockOrder.Timestamp = time.Now().Unix()
+
 	objectStockId, err := primitive.ObjectIDFromHex(stockId)
 	if err != nil {
 		return "", err
@@ -67,7 +92,7 @@ func (r stockRepositoryDB) CreateStockOrder(stockId string, stockOrder StockHist
 		return "", err
 	}
 
-	return "Successfully creted stock order", nil
+	return "Successfully created stock order", nil
 }
 
 func (r stockRepositoryDB) GetAllStocks() ([]StockCollectionResponse, error) {
@@ -183,9 +208,13 @@ func (r stockRepositoryDB) GetTopStocks() ([]StockGroup, error) {
 }
 
 func (r stockRepositoryDB) GetStock(stockId string) (StockCollectionResponse, error) {
+	if len(stockId) == 0 {
+		return StockCollectionResponse{}, ErrInvalidStock
+	}
+
 	objectStockId, err := primitive.ObjectIDFromHex(stockId)
 	if err != nil {
-		return StockCollectionResponse{}, nil
+		return StockCollectionResponse{}, err
 	}
 
 	filter := bson.M{
@@ -211,6 +240,10 @@ func (r stockRepositoryDB) GetStock(stockId string) (StockCollectionResponse, er
 func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockCollectionResponse, error) {
 	var objectFavoriteStocks []primitive.ObjectID
 	for _, stock := range favoriteStockIds {
+		if len(stock) == 0 {
+			return []StockCollectionResponse{}, ErrInvalidStock
+		}
+
 		objectStockId, err := primitive.ObjectIDFromHex(stock)
 		if err != nil {
 			return []StockCollectionResponse{}, err
@@ -233,7 +266,7 @@ func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockC
 	opts := options.Find().SetProjection(projection)
 	cursor, err := r.db.Find(ctx, filter, opts)
 	if err != nil {
-		return []model.StockCollectionResponse{}, err
+		return []StockCollectionResponse{}, err
 	}
 	defer cursor.Close(ctx)
 
@@ -258,9 +291,13 @@ func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockC
 }
 
 func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryResponse, error) {
+	if len(stockId) == 0 {
+		return []StockHistoryResponse{}, ErrInvalidStock
+	}
+
 	objectStockId, err := primitive.ObjectIDFromHex(stockId)
 	if err != nil {
-		return []StockHistoryResponse{}, nil
+		return []StockHistoryResponse{}, err
 	}
 
 	filter := bson.M{
@@ -269,10 +306,10 @@ func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryRespon
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: filter}},
 		bson.D{{Key: "$unwind", Value: "$stockHistory"}},
-		bson.D{{Key: "$limit", Value: 2}},
 		bson.D{{Key: "$sort", Value: bson.D{{
 			Key: "stockHistory.timestamp", Value: -1,
 		}}}},
+		bson.D{{Key: "$limit", Value: 2}},
 		bson.D{{Key: "$project", Value: bson.M{
 			"stockHistory.price":  1,
 			"stockHistory.amount": 1,
@@ -305,13 +342,17 @@ func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryRespon
 }
 
 func (r stockRepositoryDB) SetPrice(stockId string, price float64) (string, error) {
+	if len(stockId) == 0 {
+		return "", ErrInvalidStock
+	}
+
+	if price < 1 {
+		return "", ErrPrice
+	}
+
 	objectStockId, err := primitive.ObjectIDFromHex(stockId)
 	if err != nil {
 		return "", err
-	}
-
-	if price <= 0 {
-		return "", errs.ErrPrice
 	}
 
 	filter := bson.M{
@@ -332,13 +373,17 @@ func (r stockRepositoryDB) SetPrice(stockId string, price float64) (string, erro
 }
 
 func (r stockRepositoryDB) EditName(stockId string, name string) (string, error) {
-	objectStockId, err := primitive.ObjectIDFromHex(stockId)
-	if err != nil {
-		return "", err
+	if len(stockId) == 0 {
+		return "", ErrInvalidStock
 	}
 
 	if len(name) == 0 {
 		return "", errs.ErrName
+	}
+
+	objectStockId, err := primitive.ObjectIDFromHex(stockId)
+	if err != nil {
+		return "", err
 	}
 
 	filter := bson.M{
@@ -355,17 +400,21 @@ func (r stockRepositoryDB) EditName(stockId string, name string) (string, error)
 		return "", err
 	}
 
-	return "Successfully update name", nil
+	return "Successfully updated name", nil
 }
 
 func (r stockRepositoryDB) EditSign(stockId string, sign string) (string, error) {
-	objectStockId, err := primitive.ObjectIDFromHex(stockId)
-	if err != nil {
-		return "", err
+	if len(stockId) == 0 {
+		return "", ErrInvalidStock
 	}
 
 	if len(sign) == 0 {
-		return "", errs.ErrSign
+		return "", ErrSign
+	}
+
+	objectStockId, err := primitive.ObjectIDFromHex(stockId)
+	if err != nil {
+		return "", err
 	}
 
 	filter := bson.M{
@@ -382,10 +431,14 @@ func (r stockRepositoryDB) EditSign(stockId string, sign string) (string, error)
 		return "", err
 	}
 
-	return "Successfully update sign", nil
+	return "Successfully updated sign", nil
 }
 
 func (r stockRepositoryDB) DeleteStock(stockId string) (string, error) {
+	if len(stockId) == 0 {
+		return "", ErrInvalidStock
+	}
+	
 	objectStockId, err := primitive.ObjectIDFromHex(stockId)
 	if err != nil {
 		return "", err

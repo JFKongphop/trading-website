@@ -1,16 +1,12 @@
 package repository_test
 
 import (
-	"context"
 	"server/errs"
 	"server/model"
 	"server/repository"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func InitUserRepo() repository.UserRepository {
@@ -39,23 +35,8 @@ var (
 	ErrNotEnoughStock = errs.ErrNotEnoughStock
 	ErrInvalidStock = errs.ErrInvalidStock
 	ErrFavoriteStock = errs.ErrFavoriteStock
-) 
+)
 
-type mockCollection struct {
-	mock.Mock
-}
-
-var ctx = context.Background()
-
-func (m *mockCollection) InsertOne(document bson.M) (*mongo.InsertOneResult, error) {
-	args := m.Called(ctx, document)
-	return args.Get(0).(*mongo.InsertOneResult), args.Error(1)
-}
-
-type MockMongoCollection struct {
-	*mongo.Collection
-	*mockCollection
-}
 
 func TestInitMongoDB(t *testing.T) {
 	t.Run("Error cannot connect database", func(t *testing.T) {
