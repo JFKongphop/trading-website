@@ -1,43 +1,78 @@
 package service
 
-import "server/repository"
+import (
+	"server/repository"
+
+	"github.com/redis/go-redis/v9"
+)
 
 type UserRepository = repository.UserRepository
 
 type userService struct {
 	userRepo UserRepository
+	redisClient *redis.Client
 }
 
-func NewUserService(userRepo UserRepository) UserService {
-	return userService{userRepo}
+func NewUserService(userRepo UserRepository, redisClient *redis.Client) UserService {
+	return userService{userRepo, redisClient}
 }
 
-func (s userService) CreateUserAccount(CreateAccount) (string, error) {
+func (s userService) CreateUserAccount(userAccount CreateAccount) (string, error) {
+	result, err := s.userRepo.Create(userAccount)
+	if err != nil {
+		return "", err
+	}
 
-	return "", nil
+	return result, nil
 }
 
-func (s userService) DepositBalance(string, float64) (string, error) {
-	return "", nil
+func (s userService) DepositBalance(userId string, depositMoney float64) (string, error) {
+	result, err := s.userRepo.Deposit(userId, depositMoney)
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
 }
 
-func (s userService) WithdrawBalance(string, float64) (string, error) {
-	return "", nil
+func (s userService) WithdrawBalance(userId string, withdrawMoney float64) (string, error) {
+	result, err := s.userRepo.Withdraw(userId, withdrawMoney)
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
 }
 
-func (s userService) BuyStock(OrderRequest) (string, error) {
-	return "", nil
+func (s userService) BuyStock(orderRequest OrderRequest) (string, error) {
+	result, err := s.userRepo.Buy(orderRequest)
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
 }
 
-func (s userService) SaleStock(OrderRequest) (string, error) {
-	return "", nil
+func (s userService) SaleStock(orderRequest OrderRequest) (string, error) {
+	result, err := s.userRepo.Sale(orderRequest)
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
 }
 
-func (s userService) SetFavoriteStock(string, string) (string, error) {
-	return "", nil
+func (s userService) SetFavoriteStock(userId string, stockId string) (string, error) {
+	result, err := s.userRepo.SetFavorite(userId, stockId)
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
 }
 
-func (s userService) GetUserBalanceHistory(string, string, uint) ([]BalanceHistory, error) {
+func (s userService) GetUserBalanceHistory(userId string, method string, perpage uint) ([]BalanceHistory, error) {
+	
 	return []BalanceHistory{}, nil
 }
 

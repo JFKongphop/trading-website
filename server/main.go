@@ -8,6 +8,7 @@ import (
 	"server/model"
 	"server/repository"
 	"server/service"
+	"server/redis"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -74,6 +75,7 @@ func main() {
 	dbName := "trading-system"
 
 	client := InitMongoDB()
+	redisClient := redis.InitRedis()
 
 	// Get the database and collection
 	db := client.Database(dbName)
@@ -81,7 +83,7 @@ func main() {
 	userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
 	stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
 
-	_ = service.NewUserService(userRepositoryDB)
+	_ = service.NewUserService(userRepositoryDB, redisClient)
 	_ = service.NewStockService(stockRepositoryDB)
 	// objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
 	// if err != nil {
