@@ -39,7 +39,7 @@ type OrderRequest struct {
 }
 
 type UserHistory struct {
-	Timestamp   int64    `bson:"timestamp" json:"timestamp"`
+	Timestamp   int64   `bson:"timestamp" json:"timestamp"`
 	StockId     string  `bson:"stockId" json:"stockId"`
 	Price       float64 `bson:"price" json:"price"`
 	Amount      float64 `bson:"amount" json:"amount"`
@@ -51,6 +51,7 @@ type UserHistory struct {
 type UserResponse struct {
 	Name         string `json:"name"`
 	ProfileImage string `json:"profileImage"`
+	Email        string `json:"email"`
 }
 
 type OrderOperation struct {
@@ -63,27 +64,27 @@ type OrderOperation struct {
 }
 
 type BalanceHistory struct {
-	Timestamp int64    `bson:"timestamp" json:"timestamp"`
+	Timestamp int64   `bson:"timestamp" json:"timestamp"`
 	Balance   float64 `bson:"balance" json:"balance"`
 	Method    string  `bson:"method" json:"method"`
 }
 
-	// var projection bson.M
-	// if method == "DEPOSIT" || method == "WITHDRAW" {
-	// 	projection = bson.M{
-	// 		"balanceHistory": bson.M{
-	// 			"$elemMatch": bson.M{
-	// 				"method": "DEPOSIT",
-	// 			},
-	// 			"$slice": []int{0, 10},
-	// 		},
-	// 	}
-	// } else if method == "ALL" {
-	// 	projection = bson.M{
-	// 		"balanceHistory": bson.M{
-	// 			"$slice": []int{0, 10},
-	// 		},
-	// 	}
-	// } else {
-	// 	return []BalanceHistory{}, errors.New("invalid method")
-	// }
+// var projection bson.M
+// if method == "DEPOSIT" || method == "WITHDRAW" {
+// 	projection = bson.M{
+// 		"balanceHistory": bson.M{
+// 			"$elemMatch": bson.M{
+// 				"method": "DEPOSIT",
+// 			},
+// 			"$slice": []int{0, 10},
+// 		},
+// 	}
+// } else if method == "ALL" {
+// 	projection = bson.M{
+// 		"balanceHistory": bson.M{
+// 			"$slice": []int{0, 10},
+// 		},
+// 	}
+// } else {
+// 	return []BalanceHistory{}, errors.New("invalid method")
+// }

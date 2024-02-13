@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 	"server/model"
+	"server/redis"
 	"server/repository"
 	"server/service"
-	"server/redis"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -83,8 +83,9 @@ func main() {
 	userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
 	stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
 
-	_ = service.NewUserService(userRepositoryDB, redisClient)
+	userService := service.NewUserService(userRepositoryDB, redisClient)
 	_ = service.NewStockService(stockRepositoryDB)
+
 	// objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -109,9 +110,9 @@ func main() {
 	// fmt.Println(result)
 
 	// // DEPOSIT
-	// result, err := userRepositoryDB.Deposit(
-	// 	"65c8993c48096b5150cee5d6", 
-	// 	5000,
+	// result, err := userService.DepositBalance(
+	// 	"65c8993c48096b5150cee5d6",
+	// 	1,
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -120,9 +121,9 @@ func main() {
 	// fmt.Println(result)
 
 	// // WITHDRAW
-	// result, err = userRepositoryDB.Withdraw(
-	// 	"65c8993c48096b5150cee5d6", 
-	// 	1000,
+	// result, err := userService.WithdrawBalance(
+	// 	"65c8993c48096b5150cee5d6",
+	// 	1,
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -138,13 +139,14 @@ func main() {
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	
+
 	// fmt.Println(result)
 
 	// GET BALANCE HISTORY
-	// result, err := userRepositoryDB.GetBalanceHistory(
-	// 	"65c4fa33835f044a5c8ed063", 
-	// 	"WITHDRAW",
+	// result, err := userService.GetUserBalanceHistory(
+	// 	"65c8993c48096b5150cee5d6",
+	// 	"DEPOSIT",
+	// 	0,
 	// )
 	// if err != nil {
 	// 	log.Fatal()
@@ -154,7 +156,7 @@ func main() {
 
 	// BUY editd id
 	// orderRequest := model.OrderRequest{
-	// 	StockId:     "65c39a12c4e3672bcbf15b0f",
+	// 	StockId:     "65c39a03dfb8060d99995934",
 	// 	UserId:      "65c8993c48096b5150cee5d6",
 	// 	Price:       60,
 	// 	Amount:      8,
@@ -185,14 +187,14 @@ func main() {
 	// fmt.Println(result)
 
 	// GET ACCOUNT
-	// result, err := userRepositoryDB.GetAccount("65c8993c48096b5150cee5d6")
+	// result, err := userService.GetUserAccount("65c8993c48096b5150cee5d6")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
-	// fmt.Println(result.Favorite)
+	// fmt.Println(result)
 
 	// GET HISTORIES
-	// result, err := userRepositoryDB.GetAllHistories("65c30de7b654c0e7bf938081")
+	// result, err := userService.GetUserTradingHistories("65c8993c48096b5150cee5d6", 0)
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -201,16 +203,16 @@ func main() {
 
 	// GET STOCK HISTORIES
 	// stockId 65c35c9a832ed6ceda9a6b0f
-	// result, err := userRepositoryDB.GetStockHistory(
-	// 	"65c8993c48096b5150cee5d6",
-	// 	"65c39a12c4e3672bcbf15b0f",
-	// 	0,
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	result, err := userService.GetUserStockHistory(
+		"65c8993c48096b5150cee5d6",
+		"65c39a12c4e3672bcbf15b0f",
+		0,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// fmt.Println(result)
+	fmt.Println(result)
 
 	// GET BALANCE
 	// result, err := userRepositoryDB.GetBalance("65c4fa33835f044a5c8ed063")
@@ -220,16 +222,25 @@ func main() {
 
 	// fmt.Println(result)
 
-	// GET FAVORITE
-	// _, err = userRepositoryDB.GetFavorite("65c4fa33835f044a5c8ed063")
+	// result, err := userService.GetUserBalance("65c8993c48096b5150cee5d6")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
+	// fmt.Println(result)
+
+	// GET FAVORITE
+	// result, err := userService.GetFavoriteStock("65c8993c48096b5150cee5d6")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
 	// GET STOCK AMOUNT
-	// result, err := userRepositoryDB.GetStockAmount(
-	// 	"65c35bf2e383e16e2dd56362",
-	// 	"65c35c9a832ed6ceda9a6b0f",
+	// result, err := userService.GetUserStockAmount(
+	// 	"65c8993c48096b5150cee5d6",
+	// 	"65c39a12c4e3672bcbf15b0f",
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -239,7 +250,7 @@ func main() {
 
 	// DELETE FAVORITE STOCK
 	// result, err := userRepositoryDB.DeleteFavorite(
-	// 	"65c4fa33835f044a5c8ed063", 
+	// 	"65c4fa33835f044a5c8ed063",
 	// 	"65c39a03dfb8060d99995934",
 	// )
 	// if err != nil {
@@ -342,12 +353,12 @@ func main() {
 	// fmt.Println(result)
 
 	// GET HISTORY STOCK
-	result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
-	if err != nil {
-		log.Fatal(err)
-	}
+	// result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	fmt.Println(result)
+	// fmt.Println(result)
 
 	// GET STOCK
 	// result, err := stockRepositoryDB.GetStock("65c39a03dfb8060d99995934")
@@ -369,7 +380,7 @@ func main() {
 
 func InitMongoDB() *mongo.Client {
 	// ctx := context.Background()
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	uri := os.Getenv("MONGO_URI")
 

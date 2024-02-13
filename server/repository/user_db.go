@@ -431,6 +431,8 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 			return []BalanceHistory{}, err  
 		}
 
+		// fmt.Println(result)
+
 		balanceHistoryMap := result["balanceHistory"].(bson.M)
 		balanceHistory := BalanceHistory{
 			Timestamp: balanceHistoryMap["timestamp"].(int64),
@@ -720,22 +722,36 @@ func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserSto
 	filter := bson.M{
 		"_id": objectUserId,
 	}
-	projection := bson.M{
-		"userStock": bson.M{
-			"$elemMatch": bson.M{
-				"stockId": stockId,
-			},
-		},
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: filter}},
+		bson.D{{Key: "$unwind", Value: "$userStock"}},
+		bson.D{{Key: "$match", Value: bson.M{"userStock.stockId": stockId}}},
+		bson.D{{Key: "$project", Value: bson.M{"userStock": 1}}},
 	}
 
-	var result Stock
-	opts := options.FindOne().SetProjection(projection)
-	err = r.db.FindOne(ctx, filter, opts).Decode(&result)
+	cursor, err := r.db.Aggregate(ctx, pipeline)
 	if err != nil {
 		return UserStock{}, err
 	}
+	defer cursor.Close(ctx)
 
-	return result.UserStock[0], nil
+	var userStock UserStock
+	for cursor.Next(ctx) {
+		var result bson.M
+		if err := cursor.Decode(&result); err != nil {
+			return UserStock{}, err
+		}
+
+		userStockMap := result["userStock"].(bson.M)
+		userStock.Amount = userStockMap["amount"].(float64)
+		userStock.StockId = userStockMap["stockId"].(string)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return UserStock{}, err
+	}
+
+	return userStock, nil
 }
 
 func (r userRepositoryDB) DeleteFavorite(userId string, stockId string) (string, error) {

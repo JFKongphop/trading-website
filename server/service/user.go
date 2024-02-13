@@ -20,9 +20,9 @@ type UserService interface {
 	GetUserBalance(string) (float64, error)
 	GetFavoriteStock(string) ([]string, error)
 	GetUserAccount(string) (UserResponse, error)
-	GetUserTradingHistories(string) ([]ResponseUserHistory, error)
-	GetUserStockHistory(string) ([]ResponseUserHistory, error)
+	GetUserTradingHistories(string, uint) ([]ResponseUserHistory, error)
+	GetUserStockHistory(string, string, uint) ([]ResponseUserHistory, error)
 	GetUserStockAmount(string, string) (UserStock, error) 
 	DeleteFavoriteStock(string, string) (string, error)
-	DeleteUserAccount(string, string) (string, error)
+	DeleteUserAccount(string) (string, error)
 }
