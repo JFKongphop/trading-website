@@ -45,13 +45,10 @@ func (s stockService) CreateStockCollection(stockCollection StockCollection) (me
 }
 
 func (s stockService) CreateStockOrder(stockId string, stockOrder StockHistory) (message string, err error) {
-	stockHistoryKey := fmt.Sprintf("stockHistory:%s", stockId)
 	message, err = s.stockRepo.CreateStockOrder(stockId, stockOrder)
 	if err != nil {
 		return "", err
 	}
-
-	s.redisClient.Del(ctx, stockHistoryKey)
 
 	return message, nil
 }
@@ -93,6 +90,7 @@ func (s stockService) GetTop10Stocks() (top10Stock []TopStock, err error) {
 	}
 
 	for _, stock := range result {
+		fmt.Println(stock.Volume)
 		topStock := TopStock{
 			ID:    stock.ID,
 			Sign:  stock.Sign,
@@ -160,28 +158,37 @@ func (s stockService) SetStockPrice(stockId string, price float64) (message stri
 }
 
 func (s stockService) EditStockName(stockId string, name string) (message string, err error) {
+	stockCollectionsKey := "stockCollections"
 	message, err = s.stockRepo.EditName(stockId, name)
 	if err != nil {
 		return "", err
 	}
+
+	s.redisClient.Del(ctx, stockCollectionsKey)
 	
 	return message, nil
 }
 
 func (s stockService) EditStockSign(stockId string, sign string) (message string, err error) {
+	stockCollectionsKey := "stockCollections"
 	message, err = s.stockRepo.EditSign(stockId, sign)
 	if err != nil {
 		return "", err
 	}
+
+	s.redisClient.Del(ctx, stockCollectionsKey)
 	
 	return message, nil
 }
 
 func (s stockService) DeleteStockCollection(stockId string) (message string, err error) {
+	stockCollectionsKey := "stockCollections"
 	message, err = s.stockRepo.DeleteStock(stockId)
 	if err != nil {
 		return "", err
 	}
+
+	s.redisClient.Del(ctx, stockCollectionsKey)
 	
 	return message, nil
 }

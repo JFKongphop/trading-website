@@ -87,10 +87,10 @@ func main() {
 	_ = service.NewUserService(userRepositoryDB, redisClient)
 	_ = service.NewStockService(stockRepositoryDB, redisClient)
 
-	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6"}
-	// excludeUserIds := []string{"65c8993c48096b5150cee5d6"}
-
+	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6", "65ccda6623a24436ee69d21f"}
 	// specific.DeleteExceptId(excludeStockIds, db.Collection("stock"))
+
+	// excludeUserIds := []string{"65c8993c48096b5150cee5d6"}
 	// specific.DeleteExceptId(excludeUserIds, db.Collection("user"))
 
 	// var objectStockIdTest = []primitive.ObjectID{}
@@ -297,7 +297,7 @@ func main() {
 	// 	History:    []StockHistory{},
 	// }
 
-	// result, err := stockRepositoryDB.CreateStock(stockCollection)
+	// result, err := stockService.CreateStockCollection(stockCollection)
 	// if err != nil {
 	// 	log.Fatal(result)
 	// }
@@ -305,12 +305,12 @@ func main() {
 	// fmt.Println(result)
 
 	// GET ALL STOCK
-	// result, err := stockRepositoryDB.GetAllStocks()
+	// result, err := stockService.GetAllStockCollections()
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
-	// fmt.Println(result)
+	// fmt.Println(result[2])
 
 	// CREATE STOCK ORDER
 	// stockHistory := StockHistory{
@@ -319,8 +319,8 @@ func main() {
 	// 	Amount: 1,
 	// 	Price: 12,
 	// }
-	// result, err := stockRepositoryDB.CreateStockOrder(
-	// 	"65cc5fff0ca63a9e1e8b4db6",
+	// result, err := stockService.CreateStockOrder(
+	// 	"65ccda6623a24436ee69d21f",
 	// 	stockHistory,
 	// )
 	// if err != nil {
@@ -330,9 +330,9 @@ func main() {
 	// fmt.Println(result)
 
 	// EDIT NAME
-	// result, err := stockRepositoryDB.EditName(
-	// 	"65c39a03dfb8060d99995934",
-	// 	"KONGPHOP",
+	// result, err := stockService.EditStockName(
+	// 	"65ccda6623a24436ee69d21f",
+	// 	"TEST",
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -341,9 +341,9 @@ func main() {
 	// fmt.Println(result)
 
 	// EDIT SIGN
-	// result, err := stockRepositoryDB.EditSign(
-	// 	"65c39a03dfb8060d99995934",
-	// 	"KP",
+	// result, err := stockService.EditStockSign(
+	// 	"65ccda6623a24436ee69d21f",
+	// 	"T",
 	// )
 	// if err != nil {
 	// 	log.Fatal(err)
@@ -352,8 +352,8 @@ func main() {
 	// fmt.Println(result)
 
 	// SET PRICE
-	// result, err := stockRepositoryDB.SetPrice(
-	// 	"65c39a03dfb8060d99995934",
+	// result, err := stockService.SetStockPrice(
+	// 	"65ccda6623a24436ee69d21f",
 	// 	11.11,
 	// )
 	// if err != nil {
@@ -363,8 +363,8 @@ func main() {
 	// fmt.Println(result)
 
 	// GET FAVORITE STOCK
-	// var stocks []string = []string{"65c39a03dfb8060d99995934", "65c39a12c4e3672bcbf15b0f"}
-	// result, err := stockRepositoryDB.GetFavoriteStock(stocks)
+	// var stocks []string = []string{"65ccda6623a24436ee69d21f"}
+	// result, err := stockService.GetFavoriteStock(stocks)
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -372,7 +372,7 @@ func main() {
 	// fmt.Println(result)
 
 	// GET HISTORY STOCK
-	// result, err := stockRepositoryDB.GetStockHistory("65c39a03dfb8060d99995934")
+	// result, err := stockService.GetStockHistory("65ccda6623a24436ee69d21f")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -380,7 +380,7 @@ func main() {
 	// fmt.Println(result)
 
 	// GET STOCK
-	// result, err := stockRepositoryDB.GetStock("65c39a03dfb8060d99995934")
+	// result, err := stockService.GetStockCollection("65ccda6623a24436ee69d21f")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -388,13 +388,19 @@ func main() {
 	// fmt.Println(result)
 
 	// GET TOP STOCK
-	// result, err := stockRepositoryDB.GetTopStocks()
+	// result, err := stockService.GetTop10Stocks()
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
 	// fmt.Println(result)
 
+	// result, err := stockService.DeleteStockCollection("65ccddc168d59a209e58cc82")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
 }
 
 func InitMongoDB() *mongo.Client {

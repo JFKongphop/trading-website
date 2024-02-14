@@ -118,8 +118,10 @@ func (r stockRepositoryDB) GetAllStocks() ([]StockCollectionResponse, error) {
 			return []StockCollectionResponse{}, err
 		}
 
+		// primitive.()
+
 		stockCollection := StockCollectionResponse{
-			ID:         result["_id"].(string),
+			ID:         result["_id"].(primitive.ObjectID).Hex(),
 			StockImage: result["stockImage"].(string),
 			Name:       result["name"].(string),
 			Sign:       result["sign"].(string),
@@ -184,7 +186,7 @@ func (r stockRepositoryDB) GetTopStocks() ([]StockGroup, error) {
 		}
 
 		stock := StockGroup{
-			ID:         result["_id"].(string),
+			ID:         result["_id"].(primitive.ObjectID).Hex(),
 			Name:       result["name"].(string),
 			Price:      result["price"].(float64),
 			Sign:       result["sign"].(string),
