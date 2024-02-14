@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"server/errs"
 	"server/model"
 	"server/redis"
 	"server/repository"
@@ -15,14 +16,29 @@ type CreateAccount = model.CreateAccount
 var redisClient = redis.InitRedis()
 var userRepo = repository.NewUserRepositoryDBMock()
 
+var (
+	ErrData = errs.ErrData
+	ErrMoney = errs.ErrMoney
+)
+
 func TestCreateUserAccount(t *testing.T) {
+	expected := "Successfully created account"
+
+	t.Run("Error invalid data", func(t *testing.T) {
+		userRepo.On("Create", CreateAccount{}).Return(expected, ErrData)
+		userService := service.NewUserService(userRepo, redisClient)
+
+		_, err := userService.CreateUserAccount(CreateAccount{})
+
+		assert.ErrorIs(t, err, ErrData)
+	})
+
 	t.Run("Create user account", func(t *testing.T) {
 		account := CreateAccount{
 			Name:         "kongphop",
 			ProfileImage: "test",
 			Email:        "test@gmail.com",
 		}
-		expected := "Successfully created account"
 
 		userRepo.On("Create", account).Return(expected, nil)
 		userService := service.NewUserService(userRepo, redisClient)
@@ -35,7 +51,44 @@ func TestCreateUserAccount(t *testing.T) {
 }
 
 func TestDepositBalance(t *testing.T){
-	t.Run("Deposit balance", func(t *testing.T) {})
+	expected := "Successfully deposited money"
+
+	t.Run("Error invalid money", func(t *testing.T) {
+		userRepo.
+		On(
+			"Deposit",
+			"65c8993c48096b5150cee5d6",
+			float64(0),
+		).
+		Return(expected, ErrMoney)
+		userService := service.NewUserService(userRepo, redisClient)
+
+		_, err := userService.DepositBalance(
+			"65c8993c48096b5150cee5d6",
+			float64(0),
+		)
+
+		assert.Error(t, err, ErrMoney)
+	})
+
+	t.Run("Deposit balance", func(t *testing.T) {
+		userRepo.
+			On(
+				"Deposit",
+				"65c8993c48096b5150cee5d6",
+				float64(1),
+			).
+			Return(expected, nil)
+		userService := service.NewUserService(userRepo, redisClient)
+
+		actual ,err := userService.DepositBalance(
+			"65c8993c48096b5150cee5d6",
+			1,
+		)
+ 
+		assert.Empty(t, err)
+		assert.Equal(t, expected, actual)
+	})
 }
 
 func TestWithdrawBalance(t *testing.T){}

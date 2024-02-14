@@ -44,15 +44,15 @@ type ValidStock struct {
 }
 
 var (
-	ErrData = errs.ErrData
 	ErrUser = errs.ErrUser
+	ErrData = errs.ErrData
 	ErrMoney = errs.ErrMoney
 	ErrBalance = errs.ErrBalance
 	ErrOrderType = errs.ErrOrderType
 	ErrOrderMethod = errs.ErrOrderMethod
 	ErrInvalidStock = errs.ErrInvalidStock
-	ErrNotEnoughStock = errs.ErrNotEnoughStock
 	ErrFavoriteStock = errs.ErrFavoriteStock
+	ErrNotEnoughStock = errs.ErrNotEnoughStock
 ) 
 
 func NewUserRepositoryDB(db *mongo.Collection) UserRepository {
