@@ -118,7 +118,7 @@ func (s userService) GetUserBalance(userId string) (balance float64, err error) 
 		return 0, err
 	}
 
-	if balanceJson, err := s.redisClient.Get(context.Background(), balanceKey).Result(); err == nil {
+	if balanceJson, err := s.redisClient.Get(ctx, balanceKey).Result(); err == nil {
 		if json.Unmarshal([]byte(balanceJson), &balance) == nil {
 			
 			return balance, nil
@@ -126,7 +126,7 @@ func (s userService) GetUserBalance(userId string) (balance float64, err error) 
 	}
 
 	if data, err := json.Marshal(result); err == nil {
-		s.redisClient.Set(context.Background(), balanceKey, string(data), time.Second*3600)
+		s.redisClient.Set(ctx, balanceKey, string(data), time.Second*3600)
 	}
 
 	return result, nil
@@ -139,7 +139,7 @@ func (s userService) GetFavoriteStock(userId string) (favoriteStocks []string, e
 		return []string{}, err
 	}
 
-	if balanceJson, err := s.redisClient.Get(context.Background(), favoriteKey).Result(); err == nil {
+	if balanceJson, err := s.redisClient.Get(ctx, favoriteKey).Result(); err == nil {
 		if json.Unmarshal([]byte(balanceJson), &favoriteStocks) == nil {
 			
 			return favoriteStocks, nil
@@ -147,7 +147,7 @@ func (s userService) GetFavoriteStock(userId string) (favoriteStocks []string, e
 	}
 
 	if data, err := json.Marshal(result); err == nil {
-		s.redisClient.Set(context.Background(), favoriteKey, string(data), time.Second*3600)
+		s.redisClient.Set(ctx, favoriteKey, string(data), time.Second*3600)
 	}
 
 	return result, nil
@@ -160,7 +160,7 @@ func (s userService) GetUserAccount(userId string) (userResponse UserResponse, e
 		return UserResponse{}, err
 	}
 
-	if userResponseJson, err := s.redisClient.Get(context.Background(), userKey).Result(); err == nil {
+	if userResponseJson, err := s.redisClient.Get(ctx, userKey).Result(); err == nil {
 		if json.Unmarshal([]byte(userResponseJson), &userResponse) == nil {
 			
 			return userResponse, nil
@@ -174,7 +174,7 @@ func (s userService) GetUserAccount(userId string) (userResponse UserResponse, e
 	}
 
 	if data, err := json.Marshal(userResponse); err == nil {
-		s.redisClient.Set(context.Background(), userKey, string(data), time.Second*3600)
+		s.redisClient.Set(ctx, userKey, string(data), time.Second*3600)
 	}
 
 	return userResponse, nil
@@ -188,7 +188,7 @@ func (s userService) GetUserTradingHistories(userId string, startPage uint) (use
 
 	if startPage == 0 {
 		userHistoryKey := fmt.Sprintf("userHistory:%s", userId)
-		if historyJson, err := s.redisClient.Get(context.Background(), userHistoryKey).Result(); err == nil {
+		if historyJson, err := s.redisClient.Get(ctx, userHistoryKey).Result(); err == nil {
 			if json.Unmarshal([]byte(historyJson), &userHistories) == nil {
 				
 				return userHistories, nil
@@ -196,7 +196,7 @@ func (s userService) GetUserTradingHistories(userId string, startPage uint) (use
 		}
 	
 		if data, err := json.Marshal(result); err == nil {
-			s.redisClient.Set(context.Background(), userHistoryKey, string(data), time.Second*3600)
+			s.redisClient.Set(ctx, userHistoryKey, string(data), time.Second*3600)
 		}
 	}
 
@@ -212,7 +212,7 @@ func (s userService) GetUserStockHistory(userId string, stockId string, startPag
 	}
 
 	if startPage == 0 {
-		if stockHistoryJson, err := s.redisClient.Get(context.Background(), userStockHistoryKey).Result(); err == nil {
+		if stockHistoryJson, err := s.redisClient.Get(ctx, userStockHistoryKey).Result(); err == nil {
 			if json.Unmarshal([]byte(stockHistoryJson), &userStockHistories) == nil {
 				
 				return userStockHistories, nil
@@ -220,7 +220,7 @@ func (s userService) GetUserStockHistory(userId string, stockId string, startPag
 		}
 	
 		if data, err := json.Marshal(result); err == nil {
-			s.redisClient.Set(context.Background(), userStockHistoryKey, string(data), time.Second*3600)
+			s.redisClient.Set(ctx, userStockHistoryKey, string(data), time.Second*3600)
 		}
 	}
 
@@ -234,7 +234,7 @@ func (s userService) GetUserStockAmount(userId string, stockId string) (userStoc
 		return UserStock{}, err
 	}
 
-	if userStockJson, err := s.redisClient.Get(context.Background(), stockAmountKey).Result(); err == nil {
+	if userStockJson, err := s.redisClient.Get(ctx, stockAmountKey).Result(); err == nil {
 		if json.Unmarshal([]byte(userStockJson), &userStock) == nil {
 			
 			return userStock, nil
@@ -242,7 +242,7 @@ func (s userService) GetUserStockAmount(userId string, stockId string) (userStoc
 	}
 
 	if data, err := json.Marshal(result); err == nil {
-		s.redisClient.Set(context.Background(), stockAmountKey, string(data), time.Second*3600)
+		s.redisClient.Set(ctx, stockAmountKey, string(data), time.Second*3600)
 	}
 
 	return result, nil

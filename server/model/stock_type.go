@@ -20,6 +20,7 @@ type StockCollection struct {
 }
 
 type TopStock struct {
+	ID    string  `json:"id"`
 	Sign  string  `json:"sign"`
 	Price float64 `json:"price"`
 }
@@ -44,6 +45,7 @@ type StockHistoryResponse struct {
 }
 
 type StockGroup struct {
+	ID         string  `json:"id"`
 	Name       string  `json:"name"`
 	Price      float64 `json:"price"`
 	Sign       string  `json:"sign"`

@@ -14,9 +14,9 @@ type StockHistoryResponse = model.StockHistoryResponse
 type StockService interface {
 	CreateStockCollection(StockCollection) (string, error)
 	CreateStockOrder(string, StockHistory) (string, error)
-	GetAllStockCollections() ([]AllStock, error)
+	GetAllStockCollections() ([]StockCollectionResponse, error)
 	GetTop10Stocks() ([]TopStock, error)
-	GetStockCollection(string) (StockCollection, error)
+	GetStockCollection(string) (StockCollectionResponse, error)
 	GetFavoriteStock([]string) ([]StockCollectionResponse, error)
 	GetStockHistory(string) ([]StockHistoryResponse, error) 
 	SetStockPrice(string, float64) (string, error)

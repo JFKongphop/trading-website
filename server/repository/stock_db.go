@@ -105,7 +105,6 @@ func (r stockRepositoryDB) GetAllStocks() ([]StockCollectionResponse, error) {
 		"price":      1,
 	}
 
-
 	opts := options.Find().SetProjection(projection)
 	cursor, err := r.db.Find(ctx, filter, opts)
 	if err != nil {
@@ -185,6 +184,7 @@ func (r stockRepositoryDB) GetTopStocks() ([]StockGroup, error) {
 		}
 
 		stock := StockGroup{
+			ID:         result["_id"].(string),
 			Name:       result["name"].(string),
 			Price:      result["price"].(float64),
 			Sign:       result["sign"].(string),
@@ -224,6 +224,7 @@ func (r stockRepositoryDB) GetStock(stockId string) (StockCollectionResponse, er
 		"_id": objectStockId,
 	}
 	projection := bson.M{
+		"_id":        1,
 		"stockImage": 1,
 		"name":       1,
 		"sign":       1,
