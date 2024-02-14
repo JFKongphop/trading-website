@@ -393,7 +393,7 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 		    {Key: "balanceHistory.timestamp", Value: -1},
 		  }}},
 			bson.D{{Key: "$skip", Value: skip}},
-			bson.D{{Key: "$limit", Value: 3}},
+			bson.D{{Key: "$limit", Value: 10}},
 		  bson.D{{Key: "$project", Value: bson.M{
 		    "balanceHistory": 1,
 		  }}},
@@ -409,7 +409,7 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 		    {Key: "balanceHistory.timestamp", Value: -1},
 		  }}},
 			bson.D{{Key: "$skip", Value: skip}},
-			bson.D{{Key: "$limit", Value: 1}},
+			bson.D{{Key: "$limit", Value: 10}},
 		  bson.D{{Key: "$project", Value: bson.M{
 		    "balanceHistory": 1,
 		  }}},

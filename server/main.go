@@ -206,7 +206,7 @@ func main() {
 	result, err := userService.GetUserStockHistory(
 		"65c8993c48096b5150cee5d6",
 		"65c39a12c4e3672bcbf15b0f",
-		0,
+		1,
 	)
 	if err != nil {
 		log.Fatal(err)

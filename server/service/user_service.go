@@ -64,9 +64,11 @@ func (s userService) BuyStock(orderRequest OrderRequest) (message string, err er
 
 	userId := orderRequest.UserId 
 	stockId := orderRequest.StockId
+	balanceKey := fmt.Sprintf("balance:%s", userId)
 	stockAmountKey := fmt.Sprintf("stockAmount:%s:%s", userId, stockId)
 	userHistoryKey := fmt.Sprintf("userHistory:%s", userId)
-	s.redisClient.Del(ctx, stockAmountKey, userHistoryKey)
+	userStockHistoryKey := fmt.Sprintf("userStockHistory:%s", userId)
+	s.redisClient.Del(ctx, stockAmountKey, userHistoryKey, userStockHistoryKey, balanceKey)
 
 	return message, nil
 }
@@ -79,9 +81,11 @@ func (s userService) SaleStock(orderRequest OrderRequest) (message string, err e
 
 	userId := orderRequest.UserId 
 	stockId := orderRequest.StockId
+	balanceKey := fmt.Sprintf("balance:%s", userId)
 	stockAmountKey := fmt.Sprintf("stockAmount:%s:%s", userId, stockId)
 	userHistoryKey := fmt.Sprintf("userHistory:%s", userId)
-	s.redisClient.Del(ctx, stockAmountKey, userHistoryKey)
+	userStockHistoryKey := fmt.Sprintf("userStockHistory:%s", userId)
+	s.redisClient.Del(ctx, stockAmountKey, userHistoryKey, userStockHistoryKey, balanceKey)
 
 	return message, nil
 }
@@ -116,7 +120,7 @@ func (s userService) GetUserBalance(userId string) (balance float64, err error) 
 
 	if balanceJson, err := s.redisClient.Get(context.Background(), balanceKey).Result(); err == nil {
 		if json.Unmarshal([]byte(balanceJson), &balance) == nil {
-			fmt.Println("redis")
+			
 			return balance, nil
 		}
 	}
@@ -125,7 +129,6 @@ func (s userService) GetUserBalance(userId string) (balance float64, err error) 
 		s.redisClient.Set(context.Background(), balanceKey, string(data), time.Second*3600)
 	}
 
-	fmt.Println("db")
 	return result, nil
 }
 
@@ -138,7 +141,7 @@ func (s userService) GetFavoriteStock(userId string) (favoriteStocks []string, e
 
 	if balanceJson, err := s.redisClient.Get(context.Background(), favoriteKey).Result(); err == nil {
 		if json.Unmarshal([]byte(balanceJson), &favoriteStocks) == nil {
-			fmt.Println("redis")
+			
 			return favoriteStocks, nil
 		}
 	}
@@ -147,7 +150,6 @@ func (s userService) GetFavoriteStock(userId string) (favoriteStocks []string, e
 		s.redisClient.Set(context.Background(), favoriteKey, string(data), time.Second*3600)
 	}
 
-	fmt.Println("db")
 	return result, nil
 }
 
@@ -160,7 +162,7 @@ func (s userService) GetUserAccount(userId string) (userResponse UserResponse, e
 
 	if userResponseJson, err := s.redisClient.Get(context.Background(), userKey).Result(); err == nil {
 		if json.Unmarshal([]byte(userResponseJson), &userResponse) == nil {
-			fmt.Println("redis")
+			
 			return userResponse, nil
 		}
 	}
@@ -175,49 +177,51 @@ func (s userService) GetUserAccount(userId string) (userResponse UserResponse, e
 		s.redisClient.Set(context.Background(), userKey, string(data), time.Second*3600)
 	}
 
-	fmt.Println("db")
 	return userResponse, nil
 }
 
-// will change
 func (s userService) GetUserTradingHistories(userId string, startPage uint) (userHistories []ResponseUserHistory, err error) {
-	userHistoryKey := fmt.Sprintf("userHistory:%s", userId)
 	result, err := s.userRepo.GetAllHistories(userId, startPage)
 	if err != nil {
 		return []ResponseUserHistory{}, err
 	}
 
-	if historyJson, err := s.redisClient.Get(context.Background(), userHistoryKey).Result(); err == nil {
-		if json.Unmarshal([]byte(historyJson), &userHistories) == nil {
-			fmt.Println("redis")
-			return userHistories, nil
+	if startPage == 0 {
+		userHistoryKey := fmt.Sprintf("userHistory:%s", userId)
+		if historyJson, err := s.redisClient.Get(context.Background(), userHistoryKey).Result(); err == nil {
+			if json.Unmarshal([]byte(historyJson), &userHistories) == nil {
+				
+				return userHistories, nil
+			}
+		}
+	
+		if data, err := json.Marshal(result); err == nil {
+			s.redisClient.Set(context.Background(), userHistoryKey, string(data), time.Second*3600)
 		}
 	}
 
-	if data, err := json.Marshal(result); err == nil {
-		s.redisClient.Set(context.Background(), userHistoryKey, string(data), time.Second*3600)
-	}
-
+	fmt.Println("db all")
 	return result, nil
 }
 
-// will change
-func (s userService) GetUserStockHistory(userId string, stockId string, start uint) (userStockHistories []ResponseUserHistory, err error) {
+func (s userService) GetUserStockHistory(userId string, stockId string, startPage uint) (userStockHistories []ResponseUserHistory, err error) {
 	userStockHistoryKey := fmt.Sprintf("userStockHistory:%s", userId)
-	result, err := s.userRepo.GetUserStockHistory(userId, stockId, start)
+	result, err := s.userRepo.GetUserStockHistory(userId, stockId, startPage)
 	if err != nil {
 		return []ResponseUserHistory{}, err
 	}
 
-	if stockHistoryJson, err := s.redisClient.Get(context.Background(), userStockHistoryKey).Result(); err == nil {
-		if json.Unmarshal([]byte(stockHistoryJson), &userStockHistories) == nil {
-			fmt.Println("redis")
-			return userStockHistories, nil
+	if startPage == 0 {
+		if stockHistoryJson, err := s.redisClient.Get(context.Background(), userStockHistoryKey).Result(); err == nil {
+			if json.Unmarshal([]byte(stockHistoryJson), &userStockHistories) == nil {
+				
+				return userStockHistories, nil
+			}
 		}
-	}
-
-	if data, err := json.Marshal(result); err == nil {
-		s.redisClient.Set(context.Background(), userStockHistoryKey, string(data), time.Second*3600)
+	
+		if data, err := json.Marshal(result); err == nil {
+			s.redisClient.Set(context.Background(), userStockHistoryKey, string(data), time.Second*3600)
+		}
 	}
 
 	return result, nil
@@ -232,7 +236,7 @@ func (s userService) GetUserStockAmount(userId string, stockId string) (userStoc
 
 	if userStockJson, err := s.redisClient.Get(context.Background(), stockAmountKey).Result(); err == nil {
 		if json.Unmarshal([]byte(userStockJson), &userStock) == nil {
-			fmt.Println("redis")
+			
 			return userStock, nil
 		}
 	}
@@ -241,7 +245,6 @@ func (s userService) GetUserStockAmount(userId string, stockId string) (userStoc
 		s.redisClient.Set(context.Background(), stockAmountKey, string(data), time.Second*3600)
 	}
 
-	fmt.Println("db")
 	return result, nil
 }
 
