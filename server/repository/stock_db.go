@@ -24,7 +24,7 @@ type StockGroup = model.StockGroup
 
 var (
 	ErrPrice = errs.ErrPrice
-	ErrSign = errs.ErrSign
+	ErrSign  = errs.ErrSign
 )
 
 func NewStockRepositoryDB(db *mongo.Collection) StockRepository {
@@ -32,8 +32,8 @@ func NewStockRepositoryDB(db *mongo.Collection) StockRepository {
 }
 
 func (r stockRepositoryDB) CreateStock(stockCollection StockCollection) (string, error) {
-	if len(stockCollection.StockImage) == 0 || 
-		len(stockCollection.Sign) == 0 || 
+	if len(stockCollection.StockImage) == 0 ||
+		len(stockCollection.Sign) == 0 ||
 		len(stockCollection.Name) == 0 ||
 		stockCollection.Price < 1 {
 		return "", ErrData
@@ -52,8 +52,8 @@ func (r stockRepositoryDB) CreateStockOrder(stockId string, stockOrder StockHist
 		return "", ErrInvalidStock
 	}
 
-	if len(stockOrder.ID) == 0 || 
-		stockOrder.Amount == 0 || 
+	if len(stockOrder.ID) == 0 ||
+		stockOrder.Amount == 0 ||
 		stockOrder.Price == 0 {
 		return "", ErrData
 	}
@@ -98,11 +98,13 @@ func (r stockRepositoryDB) CreateStockOrder(stockId string, stockOrder StockHist
 func (r stockRepositoryDB) GetAllStocks() ([]StockCollectionResponse, error) {
 	filter := bson.M{}
 	projection := bson.M{
+		"_id":        1,
 		"stockImage": 1,
 		"name":       1,
 		"sign":       1,
 		"price":      1,
 	}
+
 
 	opts := options.Find().SetProjection(projection)
 	cursor, err := r.db.Find(ctx, filter, opts)
@@ -118,6 +120,7 @@ func (r stockRepositoryDB) GetAllStocks() ([]StockCollectionResponse, error) {
 		}
 
 		stockCollection := StockCollectionResponse{
+			ID:         result["_id"].(string),
 			StockImage: result["stockImage"].(string),
 			Name:       result["name"].(string),
 			Sign:       result["sign"].(string),
@@ -438,7 +441,7 @@ func (r stockRepositoryDB) DeleteStock(stockId string) (string, error) {
 	if len(stockId) == 0 {
 		return "", ErrInvalidStock
 	}
-	
+
 	objectStockId, err := primitive.ObjectIDFromHex(stockId)
 	if err != nil {
 		return "", err

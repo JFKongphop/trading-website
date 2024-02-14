@@ -9,6 +9,7 @@ import (
 	"server/redis"
 	"server/repository"
 	"server/service"
+	// "server/specific"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -83,8 +84,26 @@ func main() {
 	userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
 	stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
 
-	userService := service.NewUserService(userRepositoryDB, redisClient)
-	_ = service.NewStockService(stockRepositoryDB)
+	_ = service.NewUserService(userRepositoryDB, redisClient)
+	_ = service.NewStockService(stockRepositoryDB, redisClient)
+
+	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6"}
+	// excludeUserIds := []string{"65c8993c48096b5150cee5d6"}
+
+	// specific.DeleteExceptId(excludeStockIds, db.Collection("stock"))
+	// specific.DeleteExceptId(excludeUserIds, db.Collection("user"))
+
+	// var objectStockIdTest = []primitive.ObjectID{}
+	// for _, id := range excludeIDs {
+	// 	objectStockId, err := primitive.ObjectIDFromHex(id)
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+
+	// 	objectStockIdTest = append(objectStockIdTest, objectStockId)
+	// }
+	// filter := bson.M{"_id": bson.M{"$nin": objectStockIdTest}}
+	// db.Collection("stock").DeleteMany(context.Background(), filter)
 
 	// objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
 	// if err != nil {
@@ -203,16 +222,16 @@ func main() {
 
 	// GET STOCK HISTORIES
 	// stockId 65c35c9a832ed6ceda9a6b0f
-	result, err := userService.GetUserStockHistory(
-		"65c8993c48096b5150cee5d6",
-		"65c39a12c4e3672bcbf15b0f",
-		1,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// result, err := userService.GetUserStockHistory(
+	// 	"65c8993c48096b5150cee5d6",
+	// 	"65c39a12c4e3672bcbf15b0f",
+	// 	1,
+	// )
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	fmt.Println(result)
+	// fmt.Println(result)
 
 	// GET BALANCE
 	// result, err := userRepositoryDB.GetBalance("65c4fa33835f044a5c8ed063")
@@ -272,8 +291,8 @@ func main() {
 	// CREATE STOCK COLLECTION
 	// stockCollection := StockCollection{
 	// 	StockImage: "test-image",
-	// 	Name:       "TANAGUY",
-	// 	Sign:       "TNG",
+	// 	Name:       "test",
+	// 	Sign:       "test",
 	// 	Price:      20,
 	// 	History:    []StockHistory{},
 	// }
@@ -295,13 +314,13 @@ func main() {
 
 	// CREATE STOCK ORDER
 	// stockHistory := StockHistory{
-	// 	ID: "65c39b189f5c807c54a53030",
-	// 	Timestamp: uint(time.Now().Unix()),
-	// 	Amount: 5,
-	// 	Price: 13,
+	// 	ID: "65c8993c48096b5150cee5d6",
+	// 	Timestamp: int64(time.Now().Unix()),
+	// 	Amount: 1,
+	// 	Price: 12,
 	// }
 	// result, err := stockRepositoryDB.CreateStockOrder(
-	// 	"65c39a12c4e3672bcbf15b0f",
+	// 	"65cc5fff0ca63a9e1e8b4db6",
 	// 	stockHistory,
 	// )
 	// if err != nil {

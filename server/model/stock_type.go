@@ -4,7 +4,7 @@ import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type StockHistory struct {
 	ID        string  `bson:"userId,omitempty" json:"userId"`
-	Timestamp int64    `bson:"timestamp" json:"timestamp"`
+	Timestamp int64   `bson:"timestamp" json:"timestamp"`
 	Amount    float64 `bson:"amount" json:"amount"`
 	Price     float64 `bson:"price" json:"price"`
 }
@@ -31,6 +31,7 @@ type AllStock struct {
 }
 
 type StockCollectionResponse struct {
+	ID         string  `json:"id"`
 	StockImage string  `json:"stockImage"`
 	Name       string  `json:"name"`
 	Sign       string  `json:"sign"`
@@ -43,9 +44,9 @@ type StockHistoryResponse struct {
 }
 
 type StockGroup struct {
-	Name       string             `json:"name"`
-	Price      float64            `json:"price"`
-	Sign       string             `json:"sign"`
-	StockImage string             `json:"stockImage"`
-	Volume     float64            `json:"volume"`
+	Name       string  `json:"name"`
+	Price      float64 `json:"price"`
+	Sign       string  `json:"sign"`
+	StockImage string  `json:"stockImage"`
+	Volume     float64 `json:"volume"`
 }
