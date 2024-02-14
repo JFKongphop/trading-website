@@ -40,7 +40,7 @@ func (m *userRepositoryDBMock) SetFavorite(userId string, stockId string) (strin
 	return arge.String(0), arge.Error(1)
 }
 
-func (m *userRepositoryDBMock) GetBalanceHistory(userId string, method string) ([]BalanceHistory, error) {
+func (m *userRepositoryDBMock) GetBalanceHistory(userId string, method string, skip uint) ([]BalanceHistory, error) {
 	arge := m.Called(userId, method)
 	return arge.Get(0).([]BalanceHistory), arge.Error(1)
 }
@@ -60,12 +60,12 @@ func (m *userRepositoryDBMock) GetAccount(userId string) (UserAccount, error) {
 	return arge.Get(0).(UserAccount), arge.Error(1)
 }
 
-func (m *userRepositoryDBMock) GetAllHistories(userId string) ([]UserHistory, error) {
+func (m *userRepositoryDBMock) GetAllHistories(userId string, start uint) ([]UserHistory, error) {
 	arge := m.Called(userId)
 	return arge.Get(0).([]UserHistory), arge.Error(1)
 }
 
-func (m *userRepositoryDBMock) GetStockHistory(userId string, stockId string) ([]UserHistory, error) {
+func (m *userRepositoryDBMock) GetUserStockHistory(userId string, stockId string, skip uint) ([]UserHistory, error) {
 	arge := m.Called(userId, stockId)
 	return arge.Get(0).([]UserHistory), arge.Error(1)
 }

@@ -84,7 +84,7 @@ func main() {
 	userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
 	stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
 
-	_ = service.NewUserService(userRepositoryDB, redisClient)
+	userService := service.NewUserService(userRepositoryDB, redisClient)
 	_ = service.NewStockService(stockRepositoryDB, redisClient)
 
 	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6", "65ccda6623a24436ee69d21f"}
@@ -116,17 +116,17 @@ func main() {
 	// }
 
 	// CREATE
-	// account := model.CreateAccount{
-	// 	Name:         "kongphop",
-	// 	ProfileImage: "test",
-	// 	Email:        "test@gmail.com",
-	// }
+	account := model.CreateAccount{
+		Name:         "kongphop",
+		ProfileImage: "",
+		Email:        "test@gmail.com",
+	}
 
-	// result, err := userRepositoryDB.Create(account)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(result)
+	result, err := userService.CreateUserAccount(account)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(result)
 
 	// // DEPOSIT
 	// result, err := userService.DepositBalance(
