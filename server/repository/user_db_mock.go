@@ -41,7 +41,7 @@ func (m *userRepositoryDBMock) SetFavorite(userId string, stockId string) (strin
 }
 
 func (m *userRepositoryDBMock) GetBalanceHistory(userId string, method string, skip uint) ([]BalanceHistory, error) {
-	arge := m.Called(userId, method)
+	arge := m.Called(userId, method, skip)
 	return arge.Get(0).([]BalanceHistory), arge.Error(1)
 }
 
@@ -61,12 +61,12 @@ func (m *userRepositoryDBMock) GetAccount(userId string) (UserAccount, error) {
 }
 
 func (m *userRepositoryDBMock) GetAllHistories(userId string, start uint) ([]UserHistory, error) {
-	arge := m.Called(userId)
+	arge := m.Called(userId, start)
 	return arge.Get(0).([]UserHistory), arge.Error(1)
 }
 
 func (m *userRepositoryDBMock) GetUserStockHistory(userId string, stockId string, skip uint) ([]UserHistory, error) {
-	arge := m.Called(userId, stockId)
+	arge := m.Called(userId, stockId, skip)
 	return arge.Get(0).([]UserHistory), arge.Error(1)
 }
 

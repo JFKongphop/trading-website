@@ -120,7 +120,6 @@ func (s userService) GetUserBalance(userId string) (balance float64, err error) 
 
 	if balanceJson, err := s.redisClient.Get(ctx, balanceKey).Result(); err == nil {
 		if json.Unmarshal([]byte(balanceJson), &balance) == nil {
-			
 			return balance, nil
 		}
 	}
@@ -141,7 +140,6 @@ func (s userService) GetFavoriteStock(userId string) (favoriteStocks []string, e
 
 	if balanceJson, err := s.redisClient.Get(ctx, favoriteKey).Result(); err == nil {
 		if json.Unmarshal([]byte(balanceJson), &favoriteStocks) == nil {
-			
 			return favoriteStocks, nil
 		}
 	}
@@ -162,7 +160,6 @@ func (s userService) GetUserAccount(userId string) (userResponse UserResponse, e
 
 	if userResponseJson, err := s.redisClient.Get(ctx, userKey).Result(); err == nil {
 		if json.Unmarshal([]byte(userResponseJson), &userResponse) == nil {
-			
 			return userResponse, nil
 		}
 	}
@@ -190,7 +187,6 @@ func (s userService) GetUserTradingHistories(userId string, startPage uint) (use
 		userHistoryKey := fmt.Sprintf("userHistory:%s", userId)
 		if historyJson, err := s.redisClient.Get(ctx, userHistoryKey).Result(); err == nil {
 			if json.Unmarshal([]byte(historyJson), &userHistories) == nil {
-				
 				return userHistories, nil
 			}
 		}
@@ -214,7 +210,6 @@ func (s userService) GetUserStockHistory(userId string, stockId string, startPag
 	if startPage == 0 {
 		if stockHistoryJson, err := s.redisClient.Get(ctx, userStockHistoryKey).Result(); err == nil {
 			if json.Unmarshal([]byte(stockHistoryJson), &userStockHistories) == nil {
-				
 				return userStockHistories, nil
 			}
 		}
@@ -236,8 +231,7 @@ func (s userService) GetUserStockAmount(userId string, stockId string) (userStoc
 
 	if userStockJson, err := s.redisClient.Get(ctx, stockAmountKey).Result(); err == nil {
 		if json.Unmarshal([]byte(userStockJson), &userStock) == nil {
-			
-			return userStock, nil
+ 			return userStock, nil
 		}
 	}
 
