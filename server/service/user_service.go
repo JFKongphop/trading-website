@@ -131,7 +131,7 @@ func (s userService) GetUserBalance(userId string) (balance float64, err error) 
 	return result, nil
 }
 
-func (s userService) GetFavoriteStock(userId string) (favoriteStocks []string, err error) {
+func (s userService) GetUserFavoriteStock(userId string) (favoriteStocks []string, err error) {
 	favoriteKey := fmt.Sprintf("favorite:%s", userId)
 	result, err := s.userRepo.GetFavorite(userId)
 	if err != nil {

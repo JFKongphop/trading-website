@@ -18,7 +18,7 @@ type UserService interface {
 	SetFavoriteStock(string, string) (string, error)
 	GetUserBalanceHistory(string, string, uint) ([]BalanceHistory, error)
 	GetUserBalance(string) (float64, error)
-	GetFavoriteStock(string) ([]string, error)
+	GetUserFavoriteStock(string) ([]string, error)
 	GetUserAccount(string) (UserResponse, error)
 	GetUserTradingHistories(string, uint) ([]ResponseUserHistory, error)
 	GetUserStockHistory(string, string, uint) ([]ResponseUserHistory, error)

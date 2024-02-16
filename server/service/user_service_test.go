@@ -1,7 +1,6 @@
 package service_test
 
 import (
-	"fmt"
 	"server/errs"
 	"server/model"
 	"server/redis"
@@ -301,8 +300,6 @@ func TestGetUserBalance(t *testing.T) {
 
 		_, err := userService.GetUserBalance("65c30de7b654c0e7bf938081")
 
-		fmt.Println(err)
-
 		assert.ErrorIs(t, err, ErrUser)
 	})
 
@@ -315,13 +312,12 @@ func TestGetUserBalance(t *testing.T) {
 
 		actual, err := userService.GetUserBalance("65c30de7b654c0e7bf938081")
 
-		fmt.Println(err)
-		// assert.Empty(t, err)
+		assert.Empty(t, err)
 		assert.Equal(t, float64(0), actual)
 	})
 }
 
-func TestGetFavoriteStock(t *testing.T) {
+func GetUserFavoriteStock(t *testing.T) {
 	expected := []string{"65c30de7b654c0e7bf938081"}
 	t.Run("Get favorite stock", func(t *testing.T) {
 		userRepo.On(
@@ -330,7 +326,7 @@ func TestGetFavoriteStock(t *testing.T) {
 		).Return(expected, nil)
 		userService := service.NewUserService(userRepo, redisClient)
 
-		actual, err := userService.GetFavoriteStock("65c30de7b654c0e7bf938081")
+		actual, err := userService.GetUserFavoriteStock("65c30de7b654c0e7bf938081")
 
 		assert.Empty(t, err)
 		assert.Equal(t, expected, actual)
@@ -344,7 +340,7 @@ func TestGetFavoriteStock(t *testing.T) {
 
 		userService := service.NewUserService(userRepo, redisClient)
 
-		_, err := userService.GetFavoriteStock("")
+		_, err := userService.GetUserFavoriteStock("")
 		assert.ErrorIs(t, err, ErrUser)
 	})
 }
