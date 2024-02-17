@@ -62,7 +62,6 @@ func (s stockService) GetAllStockCollections() (stockCollections []StockCollecti
 
 	if stockCollectionJson, err := s.redisClient.Get(ctx, stockCollectionsKey).Result(); err == nil {
 		if json.Unmarshal([]byte(stockCollectionJson), &stockCollections) == nil {
-			fmt.Println("redis")
 			return stockCollections, nil
 		}
 	}
@@ -71,7 +70,6 @@ func (s stockService) GetAllStockCollections() (stockCollections []StockCollecti
 		s.redisClient.Set(ctx, stockCollectionsKey, string(data), time.Second*3600)
 	}
 
-	fmt.Println("db")
 	return result, nil
 }
 
@@ -84,7 +82,6 @@ func (s stockService) GetTop10Stocks() (top10Stock []TopStock, err error) {
 
 	if stockCollectionJson, err := s.redisClient.Get(ctx, top10StockKey).Result(); err == nil {
 		if json.Unmarshal([]byte(stockCollectionJson), &top10Stock) == nil {
-			fmt.Println("redis")
 			return top10Stock, nil
 		}
 	}
@@ -104,7 +101,6 @@ func (s stockService) GetTop10Stocks() (top10Stock []TopStock, err error) {
 		s.redisClient.Set(ctx, top10StockKey, string(data), time.Second*3600)
 	}
 
-	fmt.Println("db")
 	return top10Stock, nil
 }
 
@@ -117,7 +113,6 @@ func (s stockService) GetStockCollection(stockId string) (stockCollection StockC
 
 	if stockCollectionJson, err := s.redisClient.Get(ctx, stockCollectionKey).Result(); err == nil {
 		if json.Unmarshal([]byte(stockCollectionJson), &stockCollection) == nil {
-			fmt.Println("redis")
 			return stockCollection, nil
 		}
 	}
@@ -126,7 +121,6 @@ func (s stockService) GetStockCollection(stockId string) (stockCollection StockC
 		s.redisClient.Set(ctx, stockCollectionKey, string(data), time.Second*3600)
 	}
 
-	fmt.Println("db")
 	return result, nil
 }
 
