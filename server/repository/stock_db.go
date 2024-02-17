@@ -44,7 +44,7 @@ func (r stockRepositoryDB) CreateStock(stockCollection StockCollection) (string,
 		return "", err
 	}
 
-	return "Successfullt created stock collection", nil
+	return "Successfully created stock collection", nil
 }
 
 func (r stockRepositoryDB) CreateStockOrder(stockId string, stockOrder StockHistory) (string, error) {
@@ -117,8 +117,6 @@ func (r stockRepositoryDB) GetAllStocks() ([]StockCollectionResponse, error) {
 		if err := cursor.Decode(&result); err != nil {
 			return []StockCollectionResponse{}, err
 		}
-
-		// primitive.()
 
 		stockCollection := StockCollectionResponse{
 			ID:         result["_id"].(primitive.ObjectID).Hex(),
