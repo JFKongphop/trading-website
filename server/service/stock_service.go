@@ -3,10 +3,12 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"server/model"
 	"server/repository"
+	"server/util"
 	"time"
 
-	"github.com/redis/go-redis/v9"	
+	"github.com/redis/go-redis/v9"
 )
 
 type StockRepository = repository.StockRepository
@@ -14,27 +16,33 @@ type StockRepository = repository.StockRepository
 type stockService struct {
 	stockRepo   StockRepository
 	redisClient *redis.Client
+	googleCloudUpload *model.ClientUploader
 }
 
-// CreateStockCollection(StockCollection) (string, error)
-// CreateStockOrder(string, StockHistory) (string, error)
-// GetAllStockCollections() ([]AllStock, error)
-// GetTop10Stocks() ([]TopStock, error)
-// GetStockCollection(string) (StockCollection, error)
-// GetFavoriteStock([]string) ([]StockCollectionResponse, error)
-// GetStockHistory(string) ([]StockHistoryResponse, error)
-// SetStockPrice(string, float64) (string, error)
-// EditStockName(string, string) (string, error)
-// EditStockSign(string, string) (string, error)
-// DeleteStockCollection(string) (string, error)
 
-func NewStockService(stockRepo StockRepository, redisClient *redis.Client) StockService {
-	return stockService{stockRepo, redisClient}
+func NewStockService(stockRepo StockRepository, redisClient *redis.Client, googleCloudUpload *model.ClientUploader) StockService {
+	return stockService{stockRepo, redisClient, googleCloudUpload}
 }
 
-func (s stockService) CreateStockCollection(stockCollection StockCollection) (message string, err error) {
+func (s stockService) CreateStockCollection(stockCollection StockCollectionRequest) (message string, err error) {
+	err = util.UploadFile(
+		stockCollection.StockImage, 
+		stockCollection.Name, 
+		s.googleCloudUpload,
+	)
+	if err != nil {
+		return "", err
+	}
+
 	stockCollectionsKey := "stockCollections"
-	message, err = s.stockRepo.CreateStock(stockCollection)
+	stock := StockCollection{
+		StockImage: stockCollection.Name,
+		Name:       stockCollection.Name,
+		Sign:       stockCollection.Sign,
+		Price:      stockCollection.Price,
+		History:    []StockHistory{},
+	}
+	message, err = s.stockRepo.CreateStock(stock)
 	if err != nil {
 		return "", err
 	}

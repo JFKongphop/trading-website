@@ -1,12 +1,23 @@
 package model
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
+import (
+	"mime/multipart"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 type StockHistory struct {
 	ID        string  `bson:"userId,omitempty" json:"userId"`
 	Timestamp int64   `bson:"timestamp" json:"timestamp"`
 	Amount    float64 `bson:"amount" json:"amount"`
 	Price     float64 `bson:"price" json:"price"`
+}
+
+type StockCollectionRequest struct {
+	StockImage multipart.File `bson:"stockImage"`
+	Name       string         `bson:"name"`
+	Sign       string         `bson:"sign"`
+	Price      float64        `bson:"price"`
 }
 
 type StockCollection struct {

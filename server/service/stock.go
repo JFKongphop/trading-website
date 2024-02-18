@@ -7,12 +7,12 @@ type AllStock = model.AllStock
 type StockHistory = model.StockHistory
 type TopStock = model.TopStock
 type StockCollectionResponse = model.StockCollectionResponse
-
 type StockHistoryResponse = model.StockHistoryResponse
+type StockCollectionRequest = model.StockCollectionRequest
 
 
 type StockService interface {
-	CreateStockCollection(StockCollection) (string, error)
+	CreateStockCollection(StockCollectionRequest) (string, error)
 	CreateStockOrder(string, StockHistory) (string, error)
 	GetAllStockCollections() ([]StockCollectionResponse, error)
 	GetTop10Stocks() ([]TopStock, error)

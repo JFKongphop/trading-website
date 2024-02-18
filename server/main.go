@@ -2,17 +2,25 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"log"
 	"os"
+	"server/handler"
 	"server/model"
 	"server/redis"
 	"server/repository"
 	"server/service"
+
 	// "server/specific"
 	"time"
 
+	"cloud.google.com/go/storage"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
+	"google.golang.org/api/option"
+
 	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -60,6 +68,13 @@ type Stock struct {
 	History    []StockHistory     `bson:"stockHistory"`
 }
 
+type ClientUploader struct {
+	cl         *storage.Client
+	projectID  string
+	bucketName string
+	uploadPath string
+}
+
 type User = model.UserAccount
 type UserHistory = model.UserHistory
 type UserStock = model.UserStock
@@ -67,25 +82,46 @@ type OrderRequest model.OrderRequest
 type StockCollection = model.StockCollection
 type StockHistory = model.StockHistory
 
+var ctx = context.Background()
+var uploader *model.ClientUploader
+
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
-	dbName := "trading-system"
-
+	app := fiber.New(fiber.Config{
+		Prefork: true,
+	})
+	app.Use(cors.New())
+	app.Use(logger.New())
 	client := InitMongoDB()
 	redisClient := redis.InitRedis()
 
-	// Get the database and collection
-	db := client.Database(dbName)
+	
 
-	userRepositoryDB := repository.NewUserRepositoryDB(db.Collection("user"))
-	stockRepositoryDB := repository.NewStockRepositoryDB(db.Collection("stock"))
+	db := client.Database(os.Getenv("MONGO_DATABASE"))
+	userCollectionName := os.Getenv("MONGO_COLLECTION_USER")
+	stockCollectionName := os.Getenv("MONGO_COLLECTION_STOCK")
+	userCollection := db.Collection(userCollectionName)
+	stockCollection := db.Collection(stockCollectionName)
+
+	userRepositoryDB := repository.NewUserRepositoryDB(userCollection)
+	stockRepositoryDB := repository.NewStockRepositoryDB(stockCollection)
 
 	userService := service.NewUserService(userRepositoryDB, redisClient)
-	_ = service.NewStockService(stockRepositoryDB, redisClient)
+	stockService := service.NewStockService(stockRepositoryDB, redisClient, uploader)
+
+	_ = handler.NewUserHandler(userService)
+	stockHandler := handler.NewStockHandler(stockService)
+
+	stockGroup := app.Group("/stock", func(c *fiber.Ctx) error {
+		c.Set("stock", "stock")
+		return c.Next()
+	})
+
+	stockGroup.Get("/", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "stock is running",
+		})
+	})
+	stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
 
 	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6", "65ccda6623a24436ee69d21f"}
 	// specific.DeleteExceptId(excludeStockIds, db.Collection("stock"))
@@ -116,17 +152,17 @@ func main() {
 	// }
 
 	// CREATE
-	account := model.CreateAccount{
-		Name:         "kongphop",
-		ProfileImage: "",
-		Email:        "test@gmail.com",
-	}
+	// account := model.CreateAccount{
+	// 	Name:         "kongphop",
+	// 	ProfileImage: "",
+	// 	Email:        "test@gmail.com",
+	// }
 
-	result, err := userService.CreateUserAccount(account)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(result)
+	// result, err := userService.CreateUserAccount(account)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// fmt.Println(result)
 
 	// // DEPOSIT
 	// result, err := userService.DepositBalance(
@@ -234,7 +270,7 @@ func main() {
 	// fmt.Println(result)
 
 	// GET BALANCE
-	// result, err := userRepositoryDB.GetBalance("65c4fa33835f044a5c8ed063")
+	// result, err := userService.GetBalance("65c4fa33835f044a5c8ed063")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
@@ -401,128 +437,73 @@ func main() {
 	// }
 
 	// fmt.Println(result)
+
+	app.Listen(":4000")
+}
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	googleCloudProjectId := os.Getenv("GOOGLE_STORAGE_PROJECT_ID")
+	googleCloudBucketName := os.Getenv("GOOGLE_STORAGE_BUCKET_NAME")
+	googleCloudPrivateKeyId := os.Getenv("GOOGLE_STORAGE_PRIVATE_KEY_ID")
+	googleCloudPrivateKey := os.Getenv("GOOGLE_STORAGE_PRIVATE_KEY")
+	googleCloudClientEmail := os.Getenv("GOOGLE_STORAGE_CLIENT_EMAIL")
+	googleCloudClientId := os.Getenv("GOOGLE_STORAGE_CLIENT_ID")
+	googleCloudCertUri := os.Getenv("GOOGLE_STORAGE_CERT_URI")
+	googleCloudFolder := os.Getenv("GOOGLE_STORAGE_FOLDER")
+
+	keyFile := map[string]interface{}{
+		"type":                        "service_account",
+		"project_id":                  googleCloudProjectId,
+		"private_key_id":              googleCloudPrivateKeyId,
+		"private_key":                 googleCloudPrivateKey,
+		"client_email":                googleCloudClientEmail,
+		"client_id":                   googleCloudClientId,
+		"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
+		"token_uri":                   "https://oauth2.googleapis.com/token",
+		"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+		"client_x509_cert_url":        googleCloudCertUri,
+		"universe_domain":             "googleapis.com",
+	}
+
+	jsonBytes, err := json.Marshal(keyFile)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	client, err := storage.NewClient(ctx, option.WithCredentialsJSON([]byte(jsonBytes)))
+
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
+
+	uploader = &model.ClientUploader{
+		Cl:         client,
+		BucketName: googleCloudBucketName,
+		ProjectID:  googleCloudProjectId,
+		UploadPath: googleCloudFolder,
+	}
 }
 
 func InitMongoDB() *mongo.Client {
-	// ctx := context.Background()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	uri := os.Getenv("MONGO_URI")
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		fmt.Println("a")
-		panic(err)
+		log.Fatal("Fail to connect mongodb")
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		fmt.Println("b")
-		panic(err)
+		log.Fatal("Fail to check ping")
 	}
 
 	return client
 }
 
-// objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
-// if err != nil {
-// 	log.Fatal(err)
-// }
-
-// userHistory := UserHistory{
-// 	Timestamp:   uint(time.Now().Unix()),
-// 	StockId:     "65bf707e040d36a26f4bf523",
-// 	Price:       101,
-// 	Amount:      55,
-// 	Status:      "pending",
-// 	OrderType:   "auto",
-// 	OrderMethod: "buy",
-// }
-
-// filter := bson.M{
-// 	"_id": bson.M{
-// 		"$eq": objectId,
-// 	},
-// 	"userStock.stockId": bson.M{
-// 		"$eq": "65bf707e040d36a26f4bf523",
-// 	},
-// }
-// update := bson.M{
-// 	"$inc": bson.M{
-// 		"userStock.$.amount": 55,
-// 	},
-// 	"$push": bson.M{
-// 		"userHistory": userHistory,
-// 	},
-// } // Increment by 55
-
-// result, err := userCol.UpdateOne(context.Background(), filter, update)
-// if err != nil {
-// 	log.Fatal(err)
-// }
-
-// fmt.Println(result.MatchedCount)
-
-// func OrderMethodOperation(db *mongo.Collection, userId primitive.ObjectID, order UserHistory) (error) {
-// 	ctx := context.Background()
-// 	// amount := order.Amount
-// 	// if order.OrderMethod == "sale" {
-// 	// 	amount = -order.Amount
-// 	// }
-
-// 	filter := bson.M{
-// 		"_id": userId,
-// 	}
-// 	var userAccount UserAccount
-// 	err := db.FindOne(ctx, filter).Decode(&userAccount)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	var userStock model.UserStock
-// 	for _, stock := range userAccount.Stock {
-// 		if stock.StockId == order.StockId {
-// 			userStock = stock
-// 			break
-// 		}
-// 	}
-
-// 	if userStock.Amount == order.Amount {
-// 		update := bson.M{
-// 			"$pull": bson.M{
-// 				"userStock": bson.M{"stockId": order.StockId},
-// 			},
-// 		}
-
-// 		_, err := db.UpdateOne(ctx, filter, update)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	} else {
-// 		filter := bson.M{
-// 			"_id": bson.M{
-// 				"$eq": userId,
-// 			},
-// 			"userStock.stockId": bson.M{
-// 				"$eq": order.StockId,
-// 			},
-// 		}
-// 		update := bson.M{
-// 			"$push": bson.M{
-// 				"userHistory": order,
-// 			},
-// 			"$inc": bson.M{
-// 				"userStock.$.amount": amount,
-// 			},
-// 		}
-
-// 		ctx := context.Background()
-// 		_, err := db.UpdateOne(ctx, filter, update)
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 	}
-
-// 	return nil
-// }

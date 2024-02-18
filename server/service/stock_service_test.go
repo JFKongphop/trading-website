@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"mime/multipart"
 	"server/errs"
 	"server/model"
 	"server/repository"
@@ -16,32 +17,33 @@ type StockCollectionResponse = model.StockCollectionResponse
 type StockGroup = model.StockGroup
 type TopStock = model.TopStock
 type StockHistoryResponse = model.StockHistoryResponse
+type StockCollectionRequest = model.StockCollectionRequest
 
 var stockRepo = repository.NewStockRepositoryDBMock()
+var uploader *model.ClientUploader
 var (
 	ErrPrice = errs.ErrPrice
 	ErrName = errs.ErrName
 	ErrSign = errs.ErrSign
 )
-
+var file multipart.File
 
 func TestCreateStockCollection(t *testing.T) {
 	expected := "Successfully created stock collection"
 
 	t.Run("Create stock collection", func(t *testing.T) {
-		stockCollection := StockCollection{
-			StockImage: "test-image",
+		stockCollection := StockCollectionRequest{
+			StockImage: file,
 			Name:       "test",
 			Sign:       "test",
 			Price:      20,
-			History:    []StockHistory{},
 		}
 
 		stockRepo.On(
 			"CreateStock",
 			stockCollection,
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.CreateStockCollection(stockCollection)
 
@@ -50,19 +52,18 @@ func TestCreateStockCollection(t *testing.T) {
 	})
 
 	t.Run("Error invalid data", func(t *testing.T) {
-		stockCollection := StockCollection{
-			StockImage: "",
-			Name:       "",
-			Sign:       "",
+		stockCollection := StockCollectionRequest{
+			StockImage: file,
+			Name:       "test",
+			Sign:       "test",
 			Price:      20,
-			History:    []StockHistory{},
 		}
 
 		stockRepo.On(
 			"CreateStock",
 			stockCollection,
 		).Return(expected, ErrData)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.CreateStockCollection(stockCollection)
 
@@ -86,7 +87,7 @@ func TestCreateStockOrder(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			stockOrder,
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.CreateStockOrder(
 			"65cc5fd45aa71b64fbb551a9",
@@ -110,7 +111,7 @@ func TestCreateStockOrder(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			stockOrder,
 		).Return(expected, ErrData)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.CreateStockOrder(
 			"65cc5fd45aa71b64fbb551a9",
@@ -134,7 +135,7 @@ func TestGetAllStockCollections(t *testing.T) {
 		stockRepo.On(
 			"GetAllStocks",
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.GetAllStockCollections()
 
@@ -161,7 +162,7 @@ func TestGetTop10Stocks(t *testing.T) {
 			Price: 1,
 			Volume: 1,
 		}}, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.GetTop10Stocks()
 		 
@@ -184,7 +185,7 @@ func TestGetStockCollection(t *testing.T) {
 			"GetStock",
 			"65cc5fd45aa71b64fbb551a9",
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.GetStockCollection("65cc5fd45aa71b64fbb551a9")
 
@@ -197,7 +198,7 @@ func TestGetStockCollection(t *testing.T) {
 			"GetStock",
 			"",
 		).Return(expected, ErrInvalidStock)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.GetStockCollection("")
 
@@ -221,7 +222,7 @@ func TestGetFavoriteStock(t *testing.T) {
 			"GetFavoriteStock",
 			stockIds,
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.GetFavoriteStock(stockIds)
 
@@ -234,7 +235,7 @@ func TestGetFavoriteStock(t *testing.T) {
 			"GetFavoriteStock",
 			[]string{""},
 		).Return(expected, ErrInvalidStock)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.GetFavoriteStock([]string{""})
 
@@ -253,7 +254,7 @@ func TestGetStockHistory(t *testing.T) {
 			"GetStockHistory", 
 			"65cc5fd45aa71b64fbb551a9",
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.GetStockHistory("65cc5fd45aa71b64fbb551a9")
 
@@ -266,7 +267,7 @@ func TestGetStockHistory(t *testing.T) {
 			"GetStockHistory", 
 			"",
 		).Return(expected, ErrInvalidStock)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.GetStockHistory("")
 
@@ -283,7 +284,7 @@ func TestSetStockPrice(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			float64(1),
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.SetStockPrice(
 			"65cc5fd45aa71b64fbb551a9", 
@@ -300,7 +301,7 @@ func TestSetStockPrice(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			float64(0),
 		).Return(expected, ErrPrice)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.SetStockPrice(
 			"65cc5fd45aa71b64fbb551a9", 
@@ -320,7 +321,7 @@ func TestEditStockName(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			"T",
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.EditStockName(
 			"65cc5fd45aa71b64fbb551a9", 
@@ -337,7 +338,7 @@ func TestEditStockName(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			"",
 		).Return(expected, ErrName)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.EditStockName(
 			"65cc5fd45aa71b64fbb551a9", 
@@ -357,7 +358,7 @@ func TestEditStockSign(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			"T",
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.EditStockSign(
 			"65cc5fd45aa71b64fbb551a9", 
@@ -374,7 +375,7 @@ func TestEditStockSign(t *testing.T) {
 			"65cc5fd45aa71b64fbb551a9",
 			"",
 		).Return(expected, ErrName)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.EditStockSign(
 			"65cc5fd45aa71b64fbb551a9", 
@@ -393,7 +394,7 @@ func TestDeleteStockCollection(t *testing.T) {
 			"DeleteStock",
 			"65cc5fd45aa71b64fbb551a9",
 		).Return(expected, nil)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		actual, err := stockService.DeleteStockCollection("65cc5fd45aa71b64fbb551a9")
 
@@ -406,7 +407,7 @@ func TestDeleteStockCollection(t *testing.T) {
 			"DeleteStock",
 			"",
 		).Return(expected, ErrInvalidStock)
-		stockService := service.NewStockService(stockRepo, redisClient)
+		stockService := service.NewStockService(stockRepo, redisClient, uploader)
 
 		_, err := stockService.DeleteStockCollection("")
 
