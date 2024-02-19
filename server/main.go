@@ -4,10 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
+	// "fmt"
 
 	// "fmt"
 	"log"
 	"os"
+
+	"server/config"
 	"server/handler"
 	"server/model"
 	"server/redis"
@@ -18,9 +23,10 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	// "github.com/gofiber/fiber/v2"
-	// "github.com/gofiber/fiber/v2/middleware/cors"
-	// "github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2"
+
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 
@@ -70,13 +76,6 @@ type Stock struct {
 	History    []StockHistory     `bson:"stockHistory"`
 }
 
-type ClientUploader struct {
-	cl         *storage.Client
-	projectID  string
-	bucketName string
-	uploadPath string
-}
-
 type User = model.UserAccount
 type UserHistory = model.UserHistory
 type UserStock = model.UserStock
@@ -88,15 +87,51 @@ var ctx = context.Background()
 var uploader *model.ClientUploader
 
 func main() {
-	// app := fiber.New(fiber.Config{
-	// 	Prefork: true,
-	// })
-	// app.Use(cors.New())
-	// app.Use(logger.New())
-	client := InitMongoDB()
+	app := fiber.New(fiber.Config{
+		Prefork: true,
+	})
+	app.Use(cors.New())
+	app.Use(logger.New())
+
+
+	firebase, err := config.InitializeFirebase();
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client, err := firebase.Auth(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app.Use(func (c *fiber.Ctx) error {
+		path := c.Path()
+
+		if strings.Contains(path, "signin") || strings.Contains(path, "signup") {
+			return c.Next()
+		}
+		
+		authorization := c.Get("Authorization")
+		if len(authorization) == 0 {
+			log.Fatalf("error token: %v\n", err)
+		}
+		authToken := strings.Split(authorization, " ")[1]
+		token, err := client.VerifyIDToken(ctx, authToken)
+		if err != nil {
+			log.Fatalf("error verifying ID token: %v\n", err)
+		}
+
+		c.Locals("uid", token.UID)
+
+		return c.Next()
+	})
+
+	mongoDB := InitMongoDB()
 	redisClient := redis.InitRedis()
 
-	db := client.Database(os.Getenv("MONGO_DATABASE"))
+
+
+	db := mongoDB.Database(os.Getenv("MONGO_DATABASE"))
 	userCollectionName := os.Getenv("MONGO_COLLECTION_USER")
 	stockCollectionName := os.Getenv("MONGO_COLLECTION_STOCK")
 	userCollection := db.Collection(userCollectionName)
@@ -124,15 +159,48 @@ func main() {
 
 	// fmt.Println(result)
 
-	_ = handler.NewUserHandler(userService, stockService)
-	_ = handler.NewStockHandler(stockService)
+	userHandler := handler.NewUserHandler(userService, stockService)
+	_= handler.NewStockHandler(stockService)
 
-	// stockGroup := app.Group("/stock", func(c *fiber.Ctx) error {
-	// 	c.Set("stock", "stock")
-	// 	return c.Next()
-	// })
+	apiV1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
+		c.Set("version1", "v1")
+		return c.Next()
+	})
+
+	stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
+		c.Set("stock", "stock")
+		return c.Next()
+	})
+
+	userGroup := apiV1.Group("/user", func(c *fiber.Ctx) error {
+		c.Set("user", "user")
+		return c.Next()
+	})
+
+	userGroup.Post("/signup", userHandler.SignUp)
+
+	stockGroup.Get("/test", func(c *fiber.Ctx) error {
+		// 
+		// fmt.Println(c.Get("Authorization"), c.Locals("uid"))
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "token test",
+		})
+	})
+
+	stockGroup.Post("/test", func(c *fiber.Ctx) error {
+		authorization := c.Get("Authorization")
+		authToken := strings.Split(authorization, " ")[0]
+		
+
+		fmt.Println(authToken)
+
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "success",
+		})
+	})
 
 	// stockGroup.Get("/", func(c *fiber.Ctx) error {
+	// 	fmt.Println("test")
 	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 	// 		"message": "stock is running",
 	// 	})
@@ -168,19 +236,19 @@ func main() {
 	// }
 
 	// CREATE
-	account := model.CreateAccount{
-		UID:           "MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
-		Name:         "JFKongphop",
-		ProfileImage: "test",
-		Email:        "kongphopleo@gmail.com",
-	}
+	// account := model.CreateAccount{
+	// 	UID:           "MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
+	// 	Name:         "JFKongphop",
+	// 	ProfileImage: "test",
+	// 	Email:        "kongphopleo@gmail.com",
+	// }
 
-	result, err := userRepositoryDB.Create(account)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// result, err := userRepositoryDB.Create(account)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	fmt.Println(result)
+	// fmt.Println(result)
 
 	// result, err := userService.CreateUserAccount(account)
 	// if err != nil {
@@ -462,7 +530,7 @@ func main() {
 
 	// fmt.Println(result)
 
-	// app.Listen(":4000")
+	app.Listen(":4000")
 }
 
 func init() {

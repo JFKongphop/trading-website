@@ -43,7 +43,7 @@ type ValidStock struct {
 }
 
 var (
-	ErrLogin          = errs.ErrLogin
+	ErrSignin          = errs.ErrSignin
 	ErrUser           = errs.ErrUser
 	ErrData           = errs.ErrData
 	ErrMoney          = errs.ErrMoney
@@ -73,11 +73,11 @@ func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 	}
 	var result UserAccount
 	if err := r.db.FindOne(ctx, filter).Decode(&result); err != nil {
-		return "", err
+		return "", ErrUser
 	}
 
 	if len(result.Email) > 0 {
-		return "", ErrLogin
+		return "", ErrSignin
 	}
 
 	user := UserAccount{

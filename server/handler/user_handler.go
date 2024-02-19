@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"server/errs"
+	"server/model"
 	"server/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,15 +13,31 @@ type userHandler struct {
 	stockService service.StockService
 }
 
+type CreateAccount = model.CreateAccount
+
+var ErrUser = errs.ErrUser
+
 func NewUserHandler(userService service.UserService, stockService service.StockService) userHandler {
 	return userHandler{userService, stockService}
 }
 
 func (h userHandler) SignUp(c *fiber.Ctx) error {
-	
-	h.userService.CreateUserAccount()
+	body := CreateAccount{}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": ErrUser.Error(),
+		})
+	}
+
+	result, err := h.userService.CreateUserAccount(body)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "",
+		"message": result,
 	})
 }
 
