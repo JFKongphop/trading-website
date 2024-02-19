@@ -23,13 +23,13 @@ func NewUserService(userRepo UserRepository, redisClient *redis.Client) UserServ
 	return userService{userRepo, redisClient}
 }
 
-func (s userService) CreateUserAccount(userAccount CreateAccount) (string, error) {
-	result, err := s.userRepo.Create(userAccount)
+func (s userService) CreateUserAccount(userAccount CreateAccount) (message string, err error) {
+	message, err = s.userRepo.Create(userAccount)
 	if err != nil {
 		return "", err
 	}
 
-	return result, nil
+	return message, nil
 }
 
 func (s userService) DepositBalance(userId string, depositMoney float64) (message string, err error) {

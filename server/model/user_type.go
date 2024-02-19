@@ -71,22 +71,6 @@ type BalanceHistory struct {
 	Method    string  `bson:"method" json:"method"`
 }
 
-// var projection bson.M
-// if method == "DEPOSIT" || method == "WITHDRAW" {
-// 	projection = bson.M{
-// 		"balanceHistory": bson.M{
-// 			"$elemMatch": bson.M{
-// 				"method": "DEPOSIT",
-// 			},
-// 			"$slice": []int{0, 10},
-// 		},
-// 	}
-// } else if method == "ALL" {
-// 	projection = bson.M{
-// 		"balanceHistory": bson.M{
-// 			"$slice": []int{0, 10},
-// 		},
-// 	}
-// } else {
-// 	return []BalanceHistory{}, errors.New("invalid method")
-// }
+type UserLogin struct {
+	
+}

@@ -124,7 +124,7 @@ func main() {
 
 	// fmt.Println(result)
 
-	_ = handler.NewUserHandler(userService)
+	_ = handler.NewUserHandler(userService, stockService)
 	_ = handler.NewStockHandler(stockService)
 
 	// stockGroup := app.Group("/stock", func(c *fiber.Ctx) error {
