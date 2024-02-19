@@ -6,15 +6,14 @@ import (
 	// "strings"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserStock = model.UserStock
 
-func CheckValidStock(db *mongo.Collection, userId primitive.ObjectID, stockId string) (bool, UserStock, float64, error) {
+func CheckValidStock(db *mongo.Collection, userId string, stockId string) (bool, UserStock, float64, error) {
 	filter := bson.M{
-		"_id": userId,
+		"uid": userId,
 	}
 	
 	validStock := false

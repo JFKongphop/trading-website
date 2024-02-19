@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+
+	// "fmt"
 	"log"
 	"os"
 	"server/handler"
@@ -15,13 +18,12 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	// "github.com/gofiber/fiber/v2"
+	// "github.com/gofiber/fiber/v2/middleware/cors"
+	// "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 
-	// "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -86,15 +88,13 @@ var ctx = context.Background()
 var uploader *model.ClientUploader
 
 func main() {
-	app := fiber.New(fiber.Config{
-		Prefork: true,
-	})
-	app.Use(cors.New())
-	app.Use(logger.New())
+	// app := fiber.New(fiber.Config{
+	// 	Prefork: true,
+	// })
+	// app.Use(cors.New())
+	// app.Use(logger.New())
 	client := InitMongoDB()
 	redisClient := redis.InitRedis()
-
-	
 
 	db := client.Database(os.Getenv("MONGO_DATABASE"))
 	userCollectionName := os.Getenv("MONGO_COLLECTION_USER")
@@ -108,20 +108,36 @@ func main() {
 	userService := service.NewUserService(userRepositoryDB, redisClient)
 	stockService := service.NewStockService(stockRepositoryDB, redisClient, uploader)
 
+	// var result model.UserAccount
+	// userCollection.FindOne(ctx, bson.M{"uid": "MuwWsOQmD3PPRuMOlXh6SUbEVtn2"}).Decode(&result)
+	// fmt.Println(result)
+
+	// result, err := userRepositoryDB.GetAccount("MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// result, err := userRepositoryDB.DeleteAccount("MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// fmt.Println(result)
+
 	_ = handler.NewUserHandler(userService)
-	stockHandler := handler.NewStockHandler(stockService)
+	_ = handler.NewStockHandler(stockService)
 
-	stockGroup := app.Group("/stock", func(c *fiber.Ctx) error {
-		c.Set("stock", "stock")
-		return c.Next()
-	})
+	// stockGroup := app.Group("/stock", func(c *fiber.Ctx) error {
+	// 	c.Set("stock", "stock")
+	// 	return c.Next()
+	// })
 
-	stockGroup.Get("/", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message": "stock is running",
-		})
-	})
-	stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
+	// stockGroup.Get("/", func(c *fiber.Ctx) error {
+	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 		"message": "stock is running",
+	// 	})
+	// })
+	// stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
 
 	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6", "65ccda6623a24436ee69d21f"}
 	// specific.DeleteExceptId(excludeStockIds, db.Collection("stock"))
@@ -152,11 +168,19 @@ func main() {
 	// }
 
 	// CREATE
-	// account := model.CreateAccount{
-	// 	Name:         "kongphop",
-	// 	ProfileImage: "",
-	// 	Email:        "test@gmail.com",
-	// }
+	account := model.CreateAccount{
+		UID:           "MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
+		Name:         "JFKongphop",
+		ProfileImage: "test",
+		Email:        "kongphopleo@gmail.com",
+	}
+
+	result, err := userRepositoryDB.Create(account)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(result)
 
 	// result, err := userService.CreateUserAccount(account)
 	// if err != nil {
@@ -438,7 +462,7 @@ func main() {
 
 	// fmt.Println(result)
 
-	app.Listen(":4000")
+	// app.Listen(":4000")
 }
 
 func init() {
@@ -506,4 +530,3 @@ func InitMongoDB() *mongo.Client {
 
 	return client
 }
-

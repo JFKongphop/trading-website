@@ -10,5 +10,5 @@ func NewUserHandler(userService service.UserService) userHandler {
 	return userHandler{userService}
 }
 
-
+func (h userHandler)
 

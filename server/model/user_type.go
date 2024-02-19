@@ -12,6 +12,7 @@ type UserStock struct {
 
 type UserAccount struct {
 	ID             primitive.ObjectID  `bson:"_id,omitempty" json:"_id"`
+	UID             string              `bson:"uid" json:"uid"`
 	Name           string              `bson:"name" json:"name"`
 	ProfileImage   string              `bson:"profileImage" json:"profileImage"`
 	Email          string              `bson:"email" json:"email"`
@@ -24,6 +25,7 @@ type UserAccount struct {
 }
 
 type CreateAccount struct {
+	UID           string `json:"uid"`
 	Name         string `json:"name"`
 	ProfileImage string `json:"profileImage"`
 	Email        string `json:"email"`

@@ -347,7 +347,7 @@ func GetUserFavoriteStock(t *testing.T) {
 
 func TestGetUserAccount(t *testing.T) {
 	expetced := UserAccount{
-		ID:             primitive.ObjectID{},
+		// ID:             primitive.ObjectID{},
 		Name:           "kongphop",
 		ProfileImage:   "test",
 		Email:          "test",

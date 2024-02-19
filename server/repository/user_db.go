@@ -2,13 +2,12 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"server/errs"
 	"server/util"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	// "go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -44,16 +43,16 @@ type ValidStock struct {
 }
 
 var (
-	ErrUser = errs.ErrUser
-	ErrData = errs.ErrData
-	ErrMoney = errs.ErrMoney
-	ErrBalance = errs.ErrBalance
-	ErrOrderType = errs.ErrOrderType
-	ErrOrderMethod = errs.ErrOrderMethod
-	ErrInvalidStock = errs.ErrInvalidStock
-	ErrFavoriteStock = errs.ErrFavoriteStock
+	ErrUser           = errs.ErrUser
+	ErrData           = errs.ErrData
+	ErrMoney          = errs.ErrMoney
+	ErrBalance        = errs.ErrBalance
+	ErrOrderType      = errs.ErrOrderType
+	ErrOrderMethod    = errs.ErrOrderMethod
+	ErrInvalidStock   = errs.ErrInvalidStock
+	ErrFavoriteStock  = errs.ErrFavoriteStock
 	ErrNotEnoughStock = errs.ErrNotEnoughStock
-) 
+)
 
 func NewUserRepositoryDB(db *mongo.Collection) UserRepository {
 	return userRepositoryDB{db}
@@ -68,9 +67,10 @@ func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 	}
 
 	user := UserAccount{
+		UID:             data.UID,
 		Name:           name,
 		ProfileImage:   profileImage,
-		Email:         	email,
+		Email:          email,
 		Balance:        0,
 		BalanceHistory: []BalanceHistory{},
 		Favorite:       []string{},
@@ -98,11 +98,10 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 		return "", ErrUser
 	}
 
-	if 
-		(len(stockId) == 0) || 
-		(len(orderType) == 0) || 
-		(len(OrderMethod) == 0) || 
-		(amount <= 0) || 
+	if (len(stockId) == 0) ||
+		(len(orderType) == 0) ||
+		(len(OrderMethod) == 0) ||
+		(amount <= 0) ||
 		(price <= 0) {
 		return "", ErrData
 	}
@@ -115,10 +114,10 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 		return "", ErrOrderMethod
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return "", err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	userHistory := UserHistory{
 		StockId:     stockId,
@@ -130,7 +129,7 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 		OrderMethod: orderRequest.OrderMethod,
 	}
 
-	validStock, _, balance, err := util.CheckValidStock(r.db, objectUserId, stockId)
+	validStock, _, balance, err := util.CheckValidStock(r.db, userId, stockId)
 	if err != nil {
 		return "", err
 	}
@@ -142,8 +141,8 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 
 	if validStock {
 		filter := bson.M{
-			"_id": bson.M{
-				"$eq": objectUserId,
+			"uid": bson.M{
+				"$eq": userId,
 			},
 			"userStock.stockId": bson.M{
 				"$eq": stockId,
@@ -180,7 +179,7 @@ func (r userRepositoryDB) Buy(orderRequest OrderRequest) (string, error) {
 		}
 
 		filter := bson.M{
-			"_id": objectUserId,
+			"uid": userId,
 		}
 
 		var data bson.M
@@ -206,11 +205,10 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 		return "", ErrUser
 	}
 
-	if 
-		(len(stockId) == 0) || 
-		(len(orderType) == 0) || 
-		(len(OrderMethod) == 0) || 
-		(amount <= 0) || 
+	if (len(stockId) == 0) ||
+		(len(orderType) == 0) ||
+		(len(OrderMethod) == 0) ||
+		(amount <= 0) ||
 		(price <= 0) {
 		return "", ErrData
 	}
@@ -223,10 +221,10 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 		return "", ErrOrderMethod
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return "", err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	userHistory := UserHistory{
 		StockId:     stockId,
@@ -238,7 +236,7 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 		OrderMethod: orderRequest.OrderMethod,
 	}
 
-	validStock, userStock, _, err := util.CheckValidStock(r.db, objectUserId, stockId)
+	validStock, userStock, _, err := util.CheckValidStock(r.db, userId, stockId)
 	if err != nil {
 		return "", err
 	}
@@ -251,7 +249,7 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 	if validStock {
 		if userStock.Amount == amount {
 			filter := bson.M{
-				"_id": objectUserId,
+				"uid": userId,
 			}
 			update := bson.M{
 				"$push": bson.M{
@@ -271,8 +269,8 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 			}
 		} else if userStock.Amount > amount {
 			filter := bson.M{
-				"_id": bson.M{
-					"$eq": objectUserId,
+				"uid": bson.M{
+					"$eq": userId,
 				},
 				"userStock.stockId": bson.M{
 					"$eq": stockId,
@@ -311,13 +309,13 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 		return "", ErrInvalidStock
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return "", err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: filter}},
@@ -330,10 +328,9 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 		}}},
 	}
 
-
 	cursor, err := r.db.Aggregate(ctx, pipeline)
 	if err != nil {
-		return "", err 
+		return "", err
 	}
 	defer cursor.Close(ctx)
 
@@ -341,7 +338,7 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 	for cursor.Next(ctx) {
 		var result bson.M
 		if err := cursor.Decode(&result); err != nil {
-			return "", err  
+			return "", err
 		}
 
 		if len(result["favorite"].(string)) == 0 {
@@ -376,43 +373,43 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 		return []BalanceHistory{}, ErrOrderMethod
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return []BalanceHistory{}, err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return []BalanceHistory{}, err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	var pipeline mongo.Pipeline
 	if method == "ALL" {
 		pipeline = mongo.Pipeline{
 			bson.D{{Key: "$match", Value: filter}},
-		  bson.D{{Key: "$unwind", Value: "$balanceHistory"}},
-		  bson.D{{Key: "$sort", Value: bson.D{
-		    {Key: "balanceHistory.timestamp", Value: -1},
-		  }}},
+			bson.D{{Key: "$unwind", Value: "$balanceHistory"}},
+			bson.D{{Key: "$sort", Value: bson.D{
+				{Key: "balanceHistory.timestamp", Value: -1},
+			}}},
 			bson.D{{Key: "$skip", Value: skip}},
 			bson.D{{Key: "$limit", Value: 10}},
-		  bson.D{{Key: "$project", Value: bson.M{
-		    "balanceHistory": 1,
-		  }}},
+			bson.D{{Key: "$project", Value: bson.M{
+				"balanceHistory": 1,
+			}}},
 		}
 	} else if method == "DEPOSIT" || method == "WITHDRAW" {
 		pipeline = mongo.Pipeline{
 			bson.D{{Key: "$match", Value: filter}},
-		  bson.D{{Key: "$unwind", Value: "$balanceHistory"}},
-		  bson.D{{Key: "$match", Value: bson.M{
-		    "balanceHistory.method": method,
-		  }}},
-		  bson.D{{Key: "$sort", Value: bson.D{
-		    {Key: "balanceHistory.timestamp", Value: -1},
-		  }}},
+			bson.D{{Key: "$unwind", Value: "$balanceHistory"}},
+			bson.D{{Key: "$match", Value: bson.M{
+				"balanceHistory.method": method,
+			}}},
+			bson.D{{Key: "$sort", Value: bson.D{
+				{Key: "balanceHistory.timestamp", Value: -1},
+			}}},
 			bson.D{{Key: "$skip", Value: skip}},
 			bson.D{{Key: "$limit", Value: 10}},
-		  bson.D{{Key: "$project", Value: bson.M{
-		    "balanceHistory": 1,
-		  }}},
+			bson.D{{Key: "$project", Value: bson.M{
+				"balanceHistory": 1,
+			}}},
 		}
 	} else {
 		return []BalanceHistory{}, ErrOrderMethod
@@ -421,14 +418,14 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 	var balanceHistories []BalanceHistory
 	cursor, err := r.db.Aggregate(ctx, pipeline)
 	if err != nil {
-		return []BalanceHistory{}, err 
+		return []BalanceHistory{}, err
 	}
 	defer cursor.Close(ctx)
 
 	for cursor.Next(ctx) {
 		var result bson.M
 		if err := cursor.Decode(&result); err != nil {
-			return []BalanceHistory{}, err  
+			return []BalanceHistory{}, err
 		}
 
 		// fmt.Println(result)
@@ -436,8 +433,8 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 		balanceHistoryMap := result["balanceHistory"].(bson.M)
 		balanceHistory := BalanceHistory{
 			Timestamp: balanceHistoryMap["timestamp"].(int64),
-			Balance: balanceHistoryMap["balance"].(float64),
-			Method: balanceHistoryMap["method"].(string),
+			Balance:   balanceHistoryMap["balance"].(float64),
+			Method:    balanceHistoryMap["method"].(string),
 		}
 
 		balanceHistories = append(balanceHistories, balanceHistory)
@@ -451,13 +448,13 @@ func (r userRepositoryDB) GetBalance(userId string) (float64, error) {
 		return 0, ErrUser
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return 0, err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return 0, err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	projection := bson.M{
 		"balance": 1,
@@ -465,7 +462,7 @@ func (r userRepositoryDB) GetBalance(userId string) (float64, error) {
 
 	var userBalance UserBalance
 	opts := options.FindOne().SetProjection(projection)
-	err = r.db.FindOne(ctx, filter, opts).Decode(&userBalance)
+	err := r.db.FindOne(ctx, filter, opts).Decode(&userBalance)
 	if err != nil {
 		return 0, err
 	}
@@ -478,13 +475,13 @@ func (r userRepositoryDB) GetFavorite(userId string) ([]string, error) {
 		return []string{}, ErrUser
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return []string{}, err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return []string{}, err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	projection := bson.M{
 		"favorite": 1,
@@ -492,7 +489,7 @@ func (r userRepositoryDB) GetFavorite(userId string) ([]string, error) {
 
 	var userFavorite UserFavorite
 	opts := options.FindOne().SetProjection(projection)
-	err = r.db.FindOne(ctx, filter, opts).Decode(&userFavorite)
+	err := r.db.FindOne(ctx, filter, opts).Decode(&userFavorite)
 	if err != nil {
 		return []string{}, err
 	}
@@ -509,19 +506,19 @@ func (r userRepositoryDB) Deposit(userId string, depositMoney float64) (string, 
 		return "", ErrUser
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return "", err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	balanceHistory := BalanceHistory{
 		Timestamp: int64(time.Now().Unix()),
-		Balance: depositMoney,
-		Method: "DEPOSIT",
+		Balance:   depositMoney,
+		Method:    "DEPOSIT",
 	}
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	update := bson.M{
 		"$inc": bson.M{
@@ -532,7 +529,7 @@ func (r userRepositoryDB) Deposit(userId string, depositMoney float64) (string, 
 		},
 	}
 
-	_, err = r.db.UpdateOne(ctx, filter, update)
+	_, err := r.db.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return "", err
 	}
@@ -549,23 +546,23 @@ func (r userRepositoryDB) Withdraw(userId string, withdrawMoney float64) (string
 		return "", ErrUser
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		fmt.Println("test")
-		return "", err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	fmt.Println("test")
+	// 	return "", err
+	// }
 
 	balanceHistory := BalanceHistory{
 		Timestamp: int64(time.Now().Unix()),
-		Balance: withdrawMoney,
-		Method: "WITHDRAW",
+		Balance:   withdrawMoney,
+		Method:    "WITHDRAW",
 	}
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	var userAccount UserAccount
-	err = r.db.FindOne(ctx, filter).Decode(&userAccount)
+	err := r.db.FindOne(ctx, filter).Decode(&userAccount)
 	if err != nil {
 		return "", err
 	}
@@ -596,13 +593,13 @@ func (r userRepositoryDB) GetAccount(userId string) (userAccount UserAccount, er
 		return UserAccount{}, ErrUser
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return UserAccount{}, err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return UserAccount{}, err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	err = r.db.FindOne(ctx, filter).Decode(&userAccount)
 	if err != nil {
@@ -616,15 +613,15 @@ func (r userRepositoryDB) GetAllHistories(userId string, start uint) ([]UserHist
 	if len(userId) == 0 {
 		return []UserHistory{}, ErrUser
 	}
-	
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return []UserHistory{}, err
-	}
+
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return []UserHistory{}, err
+	// }
 
 	stop := start + 10
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	projection := bson.M{
 		"userHistory": bson.M{
@@ -634,7 +631,7 @@ func (r userRepositoryDB) GetAllHistories(userId string, start uint) ([]UserHist
 
 	var result History
 	opts := options.FindOne().SetProjection(projection)
-	err = r.db.FindOne(ctx, filter, opts).Decode(&result)
+	err := r.db.FindOne(ctx, filter, opts).Decode(&result)
 	if err != nil {
 		return []UserHistory{}, err
 	}
@@ -650,14 +647,14 @@ func (r userRepositoryDB) GetUserStockHistory(userId string, stockId string, ski
 	if len(stockId) == 0 {
 		return []UserHistory{}, ErrInvalidStock
 	}
-	
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return []UserHistory{}, err
-	}
+
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return []UserHistory{}, err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: filter}},
@@ -713,14 +710,14 @@ func (r userRepositoryDB) GetStockAmount(userId string, stockId string) (UserSto
 	if len(stockId) == 0 {
 		return UserStock{}, ErrInvalidStock
 	}
-	
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return UserStock{}, err
-	}
+
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return UserStock{}, err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	pipeline := mongo.Pipeline{
 		bson.D{{Key: "$match", Value: filter}},
@@ -763,13 +760,13 @@ func (r userRepositoryDB) DeleteFavorite(userId string, stockId string) (string,
 		return "", ErrInvalidStock
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return "", err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 	delete := bson.M{
 		"$pull": bson.M{
@@ -777,9 +774,9 @@ func (r userRepositoryDB) DeleteFavorite(userId string, stockId string) (string,
 		},
 	}
 
-	_, err = r.db.UpdateOne(ctx, filter, delete)
+	_, err := r.db.UpdateOne(ctx, filter, delete)
 	if err != nil {
-		return "", err 
+		return "", err
 	}
 
 	return "Successfully deleted favorite stock", nil
@@ -790,16 +787,16 @@ func (r userRepositoryDB) DeleteAccount(userId string) (string, error) {
 		return "", ErrUser
 	}
 
-	objectUserId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		return "", err
-	}
+	// objectUserId, err := primitive.ObjectIDFromHex(userId)
+	// if err != nil {
+	// 	return "", err
+	// }
 
 	filter := bson.M{
-		"_id": objectUserId,
+		"uid": userId,
 	}
 
-	_, err = r.db.DeleteOne(ctx, filter)
+	_, err := r.db.DeleteOne(ctx, filter)
 	if err != nil {
 		return "", err
 	}
