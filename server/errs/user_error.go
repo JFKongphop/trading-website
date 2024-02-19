@@ -3,6 +3,7 @@ package errs
 import "errors"
 
 var (
+	ErrLogin = errors.New("account is already existed")
 	ErrDB = errors.New("cannot connect database")
 	ErrData = errors.New("invalid data")
 	ErrUser = errors.New("invalid user")

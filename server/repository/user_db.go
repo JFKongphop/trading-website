@@ -43,6 +43,7 @@ type ValidStock struct {
 }
 
 var (
+	ErrLogin          = errs.ErrLogin
 	ErrUser           = errs.ErrUser
 	ErrData           = errs.ErrData
 	ErrMoney          = errs.ErrMoney
@@ -62,12 +63,25 @@ func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 	name := data.Name
 	profileImage := data.ProfileImage
 	email := data.Email
+	uid := data.UID
 	if len(name) == 0 || len(profileImage) == 0 || len(email) == 0 {
 		return "", ErrData
 	}
 
+	filter := bson.M{
+		"uid": uid,
+	}
+	var result UserAccount
+	if err := r.db.FindOne(ctx, filter).Decode(&result); err != nil {
+		return "", err
+	}
+
+	if len(result.Email) > 0 {
+		return "", ErrLogin
+	}
+
 	user := UserAccount{
-		UID:             data.UID,
+		UID:            uid,
 		Name:           name,
 		ProfileImage:   profileImage,
 		Email:          email,
