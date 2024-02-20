@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"strings"
+	// "fmt"
+
+	// "strings"
 
 	// "fmt"
 
@@ -42,6 +43,11 @@ type Person struct {
 	Name string             `bson:"name"`
 	Age  int                `bson:"age"`
 	City string             `bson:"city"`
+}
+
+type FavoriteStock struct {
+	Favorite []string `bson:"favorite"`
+	UID string `bson:"uid"`
 }
 
 // type UserHistory struct {
@@ -170,10 +176,10 @@ func main() {
 		return c.Next()
 	})
 
-	stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
-		c.Set("stock", "stock")
-		return c.Next()
-	})
+	// stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
+	// 	c.Set("stock", "stock")
+	// 	return c.Next()
+	// })
 
 	userGroup := apiV1.Group("/user", func(c *fiber.Ctx) error {
 		c.Set("user", "user")
@@ -196,25 +202,25 @@ func main() {
 	userGroup.Delete("/delete-favorite", userHandler.DeleteFavoriteStock)
 	userGroup.Delete("/delete-account", userHandler.DeleteUserAccount)
 
-	stockGroup.Get("/test", func(c *fiber.Ctx) error {
-		// 
-		// fmt.Println(c.Get("Authorization"), c.Locals("uid"))
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message": "token test",
-		})
-	})
+	// stockGroup.Get("/test", func(c *fiber.Ctx) error {
+	// 	// 
+	// 	// fmt.Println(c.Get("Authorization"), c.Locals("uid"))
+	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 		"message": "token test",
+	// 	})
+	// })
 
-	stockGroup.Post("/test", func(c *fiber.Ctx) error {
-		authorization := c.Get("Authorization")
-		authToken := strings.Split(authorization, " ")[0]
+	// stockGroup.Post("/test", func(c *fiber.Ctx) error {
+	// 	authorization := c.Get("Authorization")
+	// 	authToken := strings.Split(authorization, " ")[0]
 		
 
-		fmt.Println(authToken)
+	// 	fmt.Println(authToken)
 
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"message": "success",
-		})
-	})
+	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	// 		"message": "success",
+	// 	})
+	// })
 
 	// stockGroup.Get("/", func(c *fiber.Ctx) error {
 	// 	fmt.Println("test")
@@ -297,7 +303,7 @@ func main() {
 
 	// SET FAVORITE
 	// result, err := userRepositoryDB.SetFavorite(
-	// 	"65c8993c48096b5150cee5d6",
+	// 	"MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
 	// 	"65c39a12c4e3672bcbf15b0f",
 	// )
 	// if err != nil {
@@ -306,9 +312,29 @@ func main() {
 
 	// fmt.Println(result)
 
+	// projection := bson.M{
+	// 	"favorite": 1,
+	// 	"uid": 1,
+	// }
+	// var favoriteStock FavoriteStock
+	// opts := options.FindOne().SetProjection(projection)
+	// userCollection.FindOne(ctx, bson.M{"uid": "MuwWsOQmD3PPRuMOlXh6SUbEVtn2"}, opts).Decode(&favoriteStock)
+	// fmt.Println(favoriteStock)
+
+	// update := bson.M{
+	// 	"$push": bson.M{
+	// 		"favorite": "tettet",
+	// 	},
+	// }
+	// a, _ := userCollection.UpdateOne(ctx, bson.M{"uid": "MuwWsOQmD3PPRuMOlXh6SUbEVtn2"}, update)
+	// fmt.Println(a)
+
+
+
+
 	// GET BALANCE HISTORY
-	// result, err := userService.GetUserBalanceHistory(
-	// 	"65c8993c48096b5150cee5d6",
+	// result, err := userRepositoryDB.GetBalanceHistory(
+	// 	"MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
 	// 	"DEPOSIT",
 	// 	0,
 	// )

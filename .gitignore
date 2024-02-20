@@ -2,3 +2,5 @@
 .env
 data
 specific
+bin
+bash-request

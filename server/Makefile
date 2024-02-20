@@ -20,8 +20,8 @@ withdraw:
 buy:
 	sh ${USER_DIR}buy.sh
 
-sell:
-	sh ${USER_DIR}sell.sh
+sale:
+	sh ${USER_DIR}sale.sh
 
 setfav:
 	sh ${USER_DIR}setfav.sh
@@ -38,8 +38,8 @@ getfav:
 signin:
 	sh ${USER_DIR}signin.sh
 
-tradehis:
-	sh ${USER_DIR}tradehis.sh
+history:
+	sh ${USER_DIR}history.sh
 
 ustock:
 	sh ${USER_DIR}ustock.sh

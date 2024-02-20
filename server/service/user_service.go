@@ -196,7 +196,6 @@ func (s userService) GetUserTradingHistories(userId string, startPage uint) (use
 		}
 	}
 
-	fmt.Println("db all")
 	return result, nil
 }
 

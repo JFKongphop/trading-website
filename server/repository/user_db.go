@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"server/errs"
 	"server/util"
 	"time"
@@ -42,8 +43,12 @@ type ValidStock struct {
 	Stock []string `bson:"favorite"`
 }
 
+type FavoriteStock struct {
+	Favorite []string `bson:"favorite"`
+}
+
 var (
-	ErrSignin          = errs.ErrSignin
+	ErrSignin         = errs.ErrSignin
 	ErrUser           = errs.ErrUser
 	ErrData           = errs.ErrData
 	ErrMoney          = errs.ErrMoney
@@ -231,6 +236,8 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 		return "", ErrOrderType
 	}
 
+	fmt.Println("order", OrderMethod)
+
 	if OrderMethod != "sale" {
 		return "", ErrOrderMethod
 	}
@@ -329,48 +336,30 @@ func (r userRepositoryDB) SetFavorite(userId string, stockId string) (string, er
 	// }
 
 	filter := bson.M{
-		"uid": userId,
+		"uid":      userId,
+		"favorite": stockId,
 	}
-	pipeline := mongo.Pipeline{
-		bson.D{{Key: "$match", Value: filter}},
-		bson.D{{Key: "$unwind", Value: "$favorite"}},
-		bson.D{{Key: "$match", Value: bson.M{
-			"favorite": stockId,
-		}}},
-		bson.D{{Key: "$project", Value: bson.M{
-			"favorite": 1,
-		}}},
+	projection := bson.M{
+		"favorite": 1,
 	}
+	var favoriteStock FavoriteStock
+	opts := options.FindOne().SetProjection(projection)
+	r.db.FindOne(ctx, filter, opts).Decode(&favoriteStock)
 
-	cursor, err := r.db.Aggregate(ctx, pipeline)
-	if err != nil {
-		return "", err
-	}
-	defer cursor.Close(ctx)
-
-	validStock := true
-	for cursor.Next(ctx) {
-		var result bson.M
-		if err := cursor.Decode(&result); err != nil {
-			return "", err
-		}
-
-		if len(result["favorite"].(string)) == 0 {
-			validStock = false
-		}
-	}
-
-	if validStock {
+	if len(favoriteStock.Favorite) > 0 {
 		return "", ErrFavoriteStock
 	}
 
+	filter = bson.M{
+		"uid": userId,
+	}
 	update := bson.M{
 		"$push": bson.M{
 			"favorite": stockId,
 		},
 	}
 
-	_, err = r.db.UpdateOne(ctx, filter, update)
+	_, err := r.db.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return "", err
 	}
@@ -387,14 +376,10 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 		return []BalanceHistory{}, ErrOrderMethod
 	}
 
-	// objectUserId, err := primitive.ObjectIDFromHex(userId)
-	// if err != nil {
-	// 	return []BalanceHistory{}, err
-	// }
-
 	filter := bson.M{
 		"uid": userId,
 	}
+
 	var pipeline mongo.Pipeline
 	if method == "ALL" {
 		pipeline = mongo.Pipeline{
@@ -423,6 +408,8 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 			bson.D{{Key: "$limit", Value: 10}},
 			bson.D{{Key: "$project", Value: bson.M{
 				"balanceHistory": 1,
+				// "balanceHistory.timestamp": 1,
+				// "balanceHistory.balance": 1,
 			}}},
 		}
 	} else {
@@ -441,8 +428,6 @@ func (r userRepositoryDB) GetBalanceHistory(userId string, method string, skip u
 		if err := cursor.Decode(&result); err != nil {
 			return []BalanceHistory{}, err
 		}
-
-		// fmt.Println(result)
 
 		balanceHistoryMap := result["balanceHistory"].(bson.M)
 		balanceHistory := BalanceHistory{
@@ -623,7 +608,7 @@ func (r userRepositoryDB) GetAccount(userId string) (userAccount UserAccount, er
 	return userAccount, nil
 }
 
-func (r userRepositoryDB) GetAllHistories(userId string, start uint) ([]UserHistory, error) {
+func (r userRepositoryDB) GetAllHistories(userId string, startPage uint) ([]UserHistory, error) {
 	if len(userId) == 0 {
 		return []UserHistory{}, ErrUser
 	}
@@ -633,24 +618,73 @@ func (r userRepositoryDB) GetAllHistories(userId string, start uint) ([]UserHist
 	// 	return []UserHistory{}, err
 	// }
 
-	stop := start + 10
+	// stop := start + 10
 	filter := bson.M{
 		"uid": userId,
 	}
-	projection := bson.M{
-		"userHistory": bson.M{
-			"$slice": []int{int(start), int(stop)},
-		},
+	pipeline := mongo.Pipeline{
+		bson.D{{Key: "$match", Value: filter}},
+		bson.D{{Key: "$unwind", Value: "$userHistory"}},
+		bson.D{{Key: "$sort", Value: bson.D{{
+			Key: "userHistory.timestamp", Value: -1,
+		}}}},
+		// pagination
+		bson.D{{Key: "$skip", Value: startPage}},
+		bson.D{{Key: "$limit", Value: 10}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"userHistory": 1,
+		}}},
 	}
 
-	var result History
-	opts := options.FindOne().SetProjection(projection)
-	err := r.db.FindOne(ctx, filter, opts).Decode(&result)
+	cursor, err := r.db.Aggregate(ctx, pipeline)
 	if err != nil {
 		return []UserHistory{}, err
 	}
+	defer cursor.Close(ctx)
 
-	return result.UserHistory, nil
+	var userHistories []UserHistory
+	for cursor.Next(ctx) {
+		var result bson.M
+		if err := cursor.Decode(&result); err != nil {
+			return []UserHistory{}, err
+		}
+
+		userHistoryMap := result["userHistory"].(bson.M)
+		history := UserHistory{
+			Price:       userHistoryMap["price"].(float64),
+			Amount:      userHistoryMap["amount"].(float64),
+			Status:      userHistoryMap["status"].(string),
+			Timestamp:   userHistoryMap["timestamp"].(int64),
+			OrderType:   userHistoryMap["orderType"].(string),
+			OrderMethod: userHistoryMap["orderMethod"].(string),
+			StockId:     userHistoryMap["stockId"].(string),
+		}
+
+		userHistories = append(userHistories, history)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return []UserHistory{}, err
+	}
+
+	return userHistories, nil
+
+	// projection := bson.M{
+	// 	"userHistory": bson.M{
+	// 		"$slice": []int{int(start), int(stop)},
+	// 	},
+	// }
+
+	// var result History
+	// opts := options.FindOne().SetProjection(projection)
+	// err := r.db.FindOne(ctx, filter, opts).Decode(&result)
+	// if err != nil {
+	// 	return []UserHistory{}, err
+	// }
+
+	// fmt.Println(result)
+
+	//return result.UserHistory, nil
 }
 
 func (r userRepositoryDB) GetUserStockHistory(userId string, stockId string, skip uint) ([]UserHistory, error) {
@@ -680,7 +714,9 @@ func (r userRepositoryDB) GetUserStockHistory(userId string, stockId string, ski
 		// pagination
 		bson.D{{Key: "$skip", Value: skip}},
 		bson.D{{Key: "$limit", Value: 10}},
-		bson.D{{Key: "$project", Value: bson.M{"userHistory": 1}}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"userHistory": 1,
+		}}},
 	}
 
 	cursor, err := r.db.Aggregate(ctx, pipeline)
