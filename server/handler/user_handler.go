@@ -15,6 +15,14 @@ type userHandler struct {
 
 type CreateAccount = model.CreateAccount
 
+type UserIdRequest struct {
+	UID string `json:"uid"`
+}
+
+type UserBalanceRequest struct {
+	Balance float64 `json:"balance"`
+}
+
 var ErrUser = errs.ErrUser
 
 func NewUserHandler(userService service.UserService, stockService service.StockService) userHandler {
@@ -29,7 +37,7 @@ func (h userHandler) SignUp(c *fiber.Ctx) error {
 		})
 	}
 
-	result, err := h.userService.CreateUserAccount(body)
+	message, err := h.userService.CreateUserAccount(body)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": err.Error(),
@@ -37,21 +45,51 @@ func (h userHandler) SignUp(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": result,
+		"message": message,
 	})
 }
 
 func (h userHandler) DepositBalance(c *fiber.Ctx) error {
+	body := UserBalanceRequest{}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": ErrUser.Error(),
+		})
+	}
+
+	deposit := body.Balance
+	uid := c.Locals("uid").(string)
+	message, err := h.userService.DepositBalance(uid, deposit)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "",
+		"message": message,
 	})
 }
 
 func (h userHandler) WithdrawBalance(c *fiber.Ctx) error {
+	body := UserBalanceRequest{}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": ErrUser.Error(),
+		})
+	}
+
+	withdraw := body.Balance
+	uid := c.Locals("uid").(string)
+	message, err := h.userService.WithdrawBalance(uid, withdraw)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "",
+		"message": message,
 	})
 }
 
@@ -97,11 +135,24 @@ func (h userHandler) GetUserFavoriteStock(c *fiber.Ctx) error {
 	})
 }
 
-// get user account
 func (h userHandler) SignIn(c *fiber.Ctx) error {
-	
+	body := UserIdRequest{}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": ErrUser.Error(),
+		})
+	}
+
+	user, err := h.userService.GetUserAccount(body.UID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err,
+		}) 
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "",
+		"message": "successfully fetched user profile",
+		"user": user,
 	})
 }
 

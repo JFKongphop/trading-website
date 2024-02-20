@@ -99,29 +99,32 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client, err := firebase.Auth(ctx)
+	_, err = firebase.Auth(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	app.Use(func (c *fiber.Ctx) error {
-		path := c.Path()
+		// path := c.Path()
 
-		if strings.Contains(path, "signin") || strings.Contains(path, "signup") {
-			return c.Next()
-		}
+		// if strings.Contains(path, "signin") || strings.Contains(path, "signup") {
+		// 	return c.Next()
+		// }
 		
-		authorization := c.Get("Authorization")
-		if len(authorization) == 0 {
-			log.Fatalf("error token: %v\n", err)
-		}
-		authToken := strings.Split(authorization, " ")[1]
-		token, err := client.VerifyIDToken(ctx, authToken)
-		if err != nil {
-			log.Fatalf("error verifying ID token: %v\n", err)
-		}
+		// authorization := c.Get("Authorization")
+		// if len(authorization) == 0 {
+		// 	log.Fatalf("error token: %v\n", err)
+		// }
+		// authToken := strings.Split(authorization, " ")[1]
+		// token, err := client.VerifyIDToken(ctx, authToken)
+		// if err != nil {
+		// 	log.Fatalf("error verifying ID token: %v\n", err)
+		// }
 
-		c.Locals("uid", token.UID)
+		// c.Locals("uid", token.UID)
+
+		// mockup set 
+		c.Locals("uid", "MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
 
 		return c.Next()
 	})
@@ -178,6 +181,20 @@ func main() {
 	})
 
 	userGroup.Post("/signup", userHandler.SignUp)
+	userGroup.Post("/deposit", userHandler.DepositBalance)
+	userGroup.Post("/withdraw", userHandler.WithdrawBalance)
+	userGroup.Post("/buy", userHandler.BuyStock)
+	userGroup.Post("/sale", userHandler.SaleStock)
+	userGroup.Post("/set-favorite", userHandler.SetFavoriteStock)
+	userGroup.Get("/balance-transaction", userHandler.GetUserBalanceHistory)
+	userGroup.Get("/balance", userHandler.GetUserBalance)
+	userGroup.Get("/get-favorite", userHandler.GetUserFavoriteStock)
+	userGroup.Post("/signin", userHandler.SignIn)
+	userGroup.Get("/trade-transaction", userHandler.GetUserTradingHistories)
+	userGroup.Get("/stock-transaction", userHandler.GetUserStockHistory)
+	userGroup.Get("/stock-ratio", userHandler.GetUserStockAmount)
+	userGroup.Delete("/delete-favorite", userHandler.DeleteFavoriteStock)
+	userGroup.Delete("/delete-account", userHandler.DeleteUserAccount)
 
 	stockGroup.Get("/test", func(c *fiber.Ctx) error {
 		// 

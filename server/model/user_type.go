@@ -70,10 +70,3 @@ type BalanceHistory struct {
 	Balance   float64 `bson:"balance" json:"balance"`
 	Method    string  `bson:"method" json:"method"`
 }
-
-type UserSignUp struct {
-	UID          string `json:"uid"`
-	Name         string `json:"name"`
-	ProfileImage string `json:"profileImage"`
-	
-}
