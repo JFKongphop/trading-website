@@ -169,20 +169,20 @@ func main() {
 	// fmt.Println(result)
 
 	userHandler := handler.NewUserHandler(userService, stockService)
-	_= handler.NewStockHandler(stockService)
+	stockHandler := handler.NewStockHandler(stockService)
 
 	apiV1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
 		c.Set("version1", "v1")
 		return c.Next()
 	})
 
-	// stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
-	// 	c.Set("stock", "stock")
-	// 	return c.Next()
-	// })
-
 	userGroup := apiV1.Group("/user", func(c *fiber.Ctx) error {
 		c.Set("user", "user")
+		return c.Next()
+	})
+
+	stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
+		c.Set("stock", "stock")
 		return c.Next()
 	})
 
@@ -201,6 +201,18 @@ func main() {
 	userGroup.Get("/stock-ratio", userHandler.GetUserStockAmount)
 	userGroup.Delete("/delete-favorite", userHandler.DeleteFavoriteStock)
 	userGroup.Delete("/delete-account", userHandler.DeleteUserAccount)
+
+	
+	stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
+	stockGroup.Post("/create-order", stockHandler.CreateStockOrder)
+	stockGroup.Get("/collections", stockHandler.GetAllStockCollections)
+	stockGroup.Get("/top-stocks", stockHandler.GetTop10Stocks)
+	stockGroup.Get("/collection", stockHandler.GetStockCollection)
+	stockGroup.Get("/transaction", stockHandler.GetStockHistory)
+	stockGroup.Post("/set-price", stockHandler.SetStockPrice)
+	stockGroup.Post("/edit-name", stockHandler.EditStockName)
+	stockGroup.Post("/edit-sign", stockHandler.EditStockSign)
+	stockGroup.Post("/delete", stockHandler.DeleteStockCollection)
 
 	// stockGroup.Get("/test", func(c *fiber.Ctx) error {
 	// 	// 

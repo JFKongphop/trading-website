@@ -59,3 +59,57 @@ func (h stockHandler) CreateStockCollection(c *fiber.Ctx) error {
 		"message": message,
 	})
 }
+
+func (h stockHandler) CreateStockOrder(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) GetAllStockCollections(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) GetTop10Stocks(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) GetStockCollection(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) GetStockHistory(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) SetStockPrice(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) EditStockName(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) EditStockSign(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
+
+func (h stockHandler) DeleteStockCollection(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "",
+	})
+}
