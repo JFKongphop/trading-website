@@ -52,3 +52,34 @@ delfav:
 
 delacc:
 	sh ${USER_DIR}delacc.sh
+
+# /stock path request
+createst:
+	sh ${STOCK_DIR}createst.sh
+
+collection:
+	sh ${STOCK_DIR}collection.sh
+
+collections:
+	sh ${STOCK_DIR}collections.sh
+
+createor:
+	sh ${STOCK_DIR}createor.sh
+
+delst:
+	sh ${STOCK_DIR}delst.sh
+
+editn:
+	sh ${STOCK_DIR}editn.sh
+
+edits:
+	sh ${STOCK_DIR}edits.sh
+
+setp:
+	sh ${STOCK_DIR}setp.sh
+
+top:
+	sh ${STOCK_DIR}top.sh
+
+tran:
+	sh ${STOCK_DIR}transaction.sh

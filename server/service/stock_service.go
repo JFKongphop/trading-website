@@ -95,7 +95,6 @@ func (s stockService) GetTop10Stocks() (top10Stock []TopStock, err error) {
 	}
 
 	for _, stock := range result {
-		fmt.Println(stock.Volume)
 		topStock := TopStock{
 			ID:    stock.ID,
 			Sign:  stock.Sign,

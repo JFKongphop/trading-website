@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+
 	// "fmt"
 
 	// "strings"
@@ -202,17 +203,16 @@ func main() {
 	userGroup.Delete("/delete-favorite", userHandler.DeleteFavoriteStock)
 	userGroup.Delete("/delete-account", userHandler.DeleteUserAccount)
 
-	
 	stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
-	stockGroup.Post("/create-order", stockHandler.CreateStockOrder)
+	stockGroup.Post("/create-order/:stockId", stockHandler.CreateStockOrder)
 	stockGroup.Get("/collections", stockHandler.GetAllStockCollections)
 	stockGroup.Get("/top-stocks", stockHandler.GetTop10Stocks)
-	stockGroup.Get("/collection", stockHandler.GetStockCollection)
-	stockGroup.Get("/transaction", stockHandler.GetStockHistory)
-	stockGroup.Post("/set-price", stockHandler.SetStockPrice)
-	stockGroup.Post("/edit-name", stockHandler.EditStockName)
-	stockGroup.Post("/edit-sign", stockHandler.EditStockSign)
-	stockGroup.Post("/delete", stockHandler.DeleteStockCollection)
+	stockGroup.Get("/collection/:stockId", stockHandler.GetStockCollection)
+	stockGroup.Get("/transaction/:stockId", stockHandler.GetStockHistory)
+	stockGroup.Post("/set-price/:stockId", stockHandler.SetStockPrice)
+	stockGroup.Post("/edit-name/:stockId", stockHandler.EditStockName)
+	stockGroup.Post("/edit-sign/:stockId", stockHandler.EditStockSign)
+	stockGroup.Delete("/delete/:stockId", stockHandler.DeleteStockCollection)
 
 	// stockGroup.Get("/test", func(c *fiber.Ctx) error {
 	// 	// 
@@ -242,7 +242,7 @@ func main() {
 	// })
 	// stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
 
-	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6", "65ccda6623a24436ee69d21f"}
+	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6"}
 	// specific.DeleteExceptId(excludeStockIds, db.Collection("stock"))
 
 	// excludeUserIds := []string{"65c8993c48096b5150cee5d6"}
