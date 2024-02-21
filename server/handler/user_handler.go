@@ -68,8 +68,9 @@ func (h userHandler) DepositBalance(c *fiber.Ctx) error {
 		})
 	}
 
-	deposit := body.Balance
 	uid := c.Locals("uid").(string)
+	deposit := body.Balance
+	
 	message, err := h.userService.DepositBalance(uid, deposit)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -90,8 +91,9 @@ func (h userHandler) WithdrawBalance(c *fiber.Ctx) error {
 		})
 	}
 
-	withdraw := body.Balance
 	uid := c.Locals("uid").(string)
+	withdraw := body.Balance
+	
 	message, err := h.userService.WithdrawBalance(uid, withdraw)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -113,6 +115,7 @@ func (h userHandler) BuyStock(c *fiber.Ctx) error {
 	}
 
 	body.UserId = c.Locals("uid").(string)
+
 	message, err := h.userService.BuyStock(body)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -134,6 +137,7 @@ func (h userHandler) SaleStock(c *fiber.Ctx) error {
 	}
 
 	body.UserId = c.Locals("uid").(string)
+
 	message, err := h.userService.SaleStock(body)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -154,8 +158,9 @@ func (h userHandler) SetFavoriteStock(c *fiber.Ctx) error {
 		})
 	}
 
-	stockId := body.StockId
 	uid := c.Locals("uid").(string)
+	stockId := body.StockId
+
 	message, err := h.userService.SetFavoriteStock(uid, stockId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -170,6 +175,7 @@ func (h userHandler) SetFavoriteStock(c *fiber.Ctx) error {
 
 func (h userHandler) GetUserBalance(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(string)
+
 	balance, err := h.userService.GetUserBalance(uid)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -203,6 +209,7 @@ func (h userHandler) GetUserBalanceHistory(c *fiber.Ctx) error {
 
 func (h userHandler) GetUserFavoriteStock(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(string)
+
 	stockId, err := h.userService.GetUserFavoriteStock(uid)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -234,7 +241,7 @@ func (h userHandler) SignIn(c *fiber.Ctx) error {
 	user, err := h.userService.GetUserAccount(body.UID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
+			"message": err.Error(),
 		}) 
 	}
 
@@ -247,10 +254,11 @@ func (h userHandler) SignIn(c *fiber.Ctx) error {
 func (h userHandler) GetUserTradingHistories(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(string)
 	startPage := c.QueryInt("startPage")
+
 	transactions, err := h.userService.GetUserTradingHistories(uid, uint(startPage))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
+			"message": err.Error(),
 		})
 	}
 	
@@ -264,10 +272,11 @@ func (h userHandler) GetUserStockHistory(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(string)
 	startPage := c.QueryInt("startPage")
 	stockId := c.Query("stockId")
+	
 	transactions, err := h.userService.GetUserStockHistory(uid, stockId, uint(startPage))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
+			"message": err.Error(),
 		})
 	}
 	
@@ -284,7 +293,7 @@ func (h userHandler) GetUserStockAmount(c *fiber.Ctx) error {
 	stockRatio, err := h.userService.GetUserStockAmount(uid, stockId)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err,
+			"message": err.Error(),
 		})
 	}
 
@@ -295,15 +304,32 @@ func (h userHandler) GetUserStockAmount(c *fiber.Ctx) error {
 }
 
 func (h userHandler) DeleteFavoriteStock(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(string)
+	stockId := c.Query("stockId")
+
+	message, err := h.userService.DeleteFavoriteStock(uid, stockId)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "successfully delete favorite stock",
+		"message": message,
 	})
 }
 
 func (h userHandler) DeleteUserAccount(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(string)
+
+	message, err := h.userService.DeleteUserAccount(uid)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 	
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "successfully delete account",
+		"message": message,
 	})
 }

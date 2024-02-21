@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"server/errs"
 	"server/util"
 	"time"
@@ -77,7 +76,7 @@ func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 		"uid": uid,
 	}
 	var result UserAccount
-	if err := r.db.FindOne(ctx, filter).Decode(&result); err != nil {
+	if err := r.db.FindOne(ctx, filter).Decode(&result); err != mongo.ErrNoDocuments {
 		return "", ErrUser
 	}
 
@@ -235,8 +234,6 @@ func (r userRepositoryDB) Sale(orderRequest OrderRequest) (string, error) {
 	if orderType != "auto" && orderType != "order" {
 		return "", ErrOrderType
 	}
-
-	fmt.Println("order", OrderMethod)
 
 	if OrderMethod != "sale" {
 		return "", ErrOrderMethod
