@@ -40,7 +40,7 @@ type EditSignRequest struct {
 	Sign  string  `json:"sign"`
 }
 
-
+// change sime
 var ErrData = errs.ErrData
 
 func NewStockHandler(stockService service.StockService) stockHandler {
