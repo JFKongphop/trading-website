@@ -4,6 +4,9 @@ build:
 run:
 	nodemon --exec go run main.go --signal SIGTERM
 
+line:
+	cloc *
+
 USER_DIR := ./bash-request/user/
 STOCK_DIR := ./bash-request/stock/
 
