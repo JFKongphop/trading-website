@@ -68,7 +68,7 @@ func (r userRepositoryDB) Create(data CreateAccount) (string, error) {
 	profileImage := data.ProfileImage
 	email := data.Email
 	uid := data.UID
-	if len(name) == 0 || len(profileImage) == 0 || len(email) == 0 {
+	if len(name) == 0 || len(profileImage) == 0 || len(email) == 0 || len(uid) == 0 {
 		return "", ErrData
 	}
 

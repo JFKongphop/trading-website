@@ -3,14 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-
-	// "fmt"
-
-	// "strings"
-
-	// "fmt"
-
-	// "fmt"
 	"log"
 	"os"
 
@@ -25,10 +17,13 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	// "github.com/gofiber/fiber/v2"
+
+	// "github.com/gofiber/fiber/v2/middleware/cors"
+	// "github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 
@@ -94,11 +89,21 @@ var ctx = context.Background()
 var uploader *model.ClientUploader
 
 func main() {
-	app := fiber.New(fiber.Config{
-		Prefork: true,
+	// app := fiber.New(fiber.Config{
+	// 	Prefork: true,
+	// })
+	// app.Use(cors.New())
+	// app.Use(logger.New())
+
+	app := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+
+	app.Use(cors.Default())
+	app.Use(gin.Logger())
+	app.Use(func(c *gin.Context) {		
+		c.Set("uid", "test12345")
+		c.Next()
 	})
-	app.Use(cors.New())
-	app.Use(logger.New())
 
 
 	firebase, err := config.InitializeFirebase();
@@ -111,30 +116,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app.Use(func (c *fiber.Ctx) error {
-		// path := c.Path()
+	// app.Use(func (c *fiber.Ctx) error {
+	// 	// path := c.Path()
 
-		// if strings.Contains(path, "signin") || strings.Contains(path, "signup") {
-		// 	return c.Next()
-		// }
+	// 	// if strings.Contains(path, "signin") || strings.Contains(path, "signup") {
+	// 	// 	return c.Next()
+	// 	// }
 		
-		// authorization := c.Get("Authorization")
-		// if len(authorization) == 0 {
-		// 	log.Fatalf("error token: %v\n", err)
-		// }
-		// authToken := strings.Split(authorization, " ")[1]
-		// token, err := client.VerifyIDToken(ctx, authToken)
-		// if err != nil {
-		// 	log.Fatalf("error verifying ID token: %v\n", err)
-		// }
+	// 	// authorization := c.GET("Authorization")
+	// 	// if len(authorization) == 0 {
+	// 	// 	log.Fatalf("error token: %v\n", err)
+	// 	// }
+	// 	// authToken := strings.Split(authorization, " ")[1]
+	// 	// token, err := client.VerifyIDToken(ctx, authToken)
+	// 	// if err != nil {
+	// 	// 	log.Fatalf("error verifying ID token: %v\n", err)
+	// 	// }
 
-		// c.Locals("uid", token.UID)
+	// 	// c.Locals("uid", token.UID)
 
-		// mockup set 
-		c.Locals("uid", "MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
+	// 	// mockup set 
+	// 	c.Locals("uid", "MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
 
-		return c.Next()
-	})
+	// 	return c.Next()
+	// })
 
 	mongoDB := InitMongoDB()
 	redisClient := redis.InitRedis()
@@ -170,60 +175,79 @@ func main() {
 	// fmt.Println(result)
 
 	userHandler := handler.NewUserHandler(userService, stockService)
-	stockHandler := handler.NewStockHandler(stockService)
+	_ = handler.NewStockHandler(stockService)
 
-	apiV1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
-		c.Set("version1", "v1")
-		return c.Next()
+	// apiV1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
+	// 	c.Set("version1", "v1")
+	// 	return c.Next()
+	// })
+
+	apiV1 := app.Group("/api/v1")
+
+	userGroup := apiV1.Group("/user")
+	stockGroup := apiV1.Group("/stock")
+
+	userGroup.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "api is running in user",
+		})
 	})
 
-	userGroup := apiV1.Group("/user", func(c *fiber.Ctx) error {
-		c.Set("user", "user")
-		return c.Next()
+	stockGroup.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "api is running in stock",
+		})
 	})
 
-	stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
-		c.Set("stock", "stock")
-		return c.Next()
-	})
 
-	userGroup.Post("/signup", userHandler.SignUp)
-	userGroup.Post("/deposit", userHandler.DepositBalance)
-	userGroup.Post("/withdraw", userHandler.WithdrawBalance)
-	userGroup.Post("/buy", userHandler.BuyStock)
-	userGroup.Post("/sale", userHandler.SaleStock)
-	userGroup.Post("/set-favorite", userHandler.SetFavoriteStock)
-	userGroup.Get("/balance-transaction", userHandler.GetUserBalanceHistory)
-	userGroup.Get("/balance", userHandler.GetUserBalance)
-	userGroup.Get("/get-favorite", userHandler.GetUserFavoriteStock)
-	userGroup.Post("/signin", userHandler.SignIn)
-	userGroup.Get("/trade-transaction", userHandler.GetUserTradingHistories)
-	userGroup.Get("/stock-transaction", userHandler.GetUserStockHistory)
-	userGroup.Get("/stock-ratio", userHandler.GetUserStockAmount)
-	userGroup.Delete("/delete-favorite", userHandler.DeleteFavoriteStock)
-	userGroup.Delete("/delete-account", userHandler.DeleteUserAccount)
 
-	stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
-	stockGroup.Post("/create-order/:stockId", stockHandler.CreateStockOrder)
-	stockGroup.Get("/collections", stockHandler.GetAllStockCollections)
-	stockGroup.Get("/top-stocks", stockHandler.GetTop10Stocks)
-	stockGroup.Get("/collection/:stockId", stockHandler.GetStockCollection)
-	stockGroup.Get("/transaction/:stockId", stockHandler.GetStockHistory)
-	stockGroup.Post("/set-price/:stockId", stockHandler.SetStockPrice)
-	stockGroup.Post("/edit-name/:stockId", stockHandler.EditStockName)
-	stockGroup.Post("/edit-sign/:stockId", stockHandler.EditStockSign)
-	stockGroup.Delete("/delete/:stockId", stockHandler.DeleteStockCollection)
+	// userGroup := apiV1.Group("/user", func(c *fiber.Ctx) error {
+	// 	c.Set("user", "user")
+	// 	return c.Next()
+	// })
 
-	// stockGroup.Get("/test", func(c *fiber.Ctx) error {
+	// stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
+	// 	c.Set("stock", "stock")
+	// 	return c.Next()
+	// })
+
+	userGroup.POST("/signup", userHandler.SignUp)
+	userGroup.POST("/deposit", userHandler.DepositBalance)
+	// userGroup.POST("/withdraw", userHandler.WithdrawBalance)
+	// userGroup.POST("/buy", userHandler.BuyStock)
+	// userGroup.POST("/sale", userHandler.SaleStock)
+	// userGroup.POST("/set-favorite", userHandler.SetFavoriteStock)
+	// userGroup.GET("/balance-transaction", userHandler.GetUserBalanceHistory)
+	// userGroup.GET("/balance", userHandler.GetUserBalance)
+	// userGroup.GET("/get-favorite", userHandler.GetUserFavoriteStock)
+	// userGroup.POST("/signin", userHandler.SignIn)
+	// userGroup.GET("/trade-transaction", userHandler.GetUserTradingHistories)
+	// userGroup.GET("/stock-transaction", userHandler.GetUserStockHistory)
+	// userGroup.GET("/stock-ratio", userHandler.GetUserStockAmount)
+	// userGroup.DELETE("/delete-favorite", userHandler.DeleteFavoriteStock)
+	// userGroup.DELETE("/delete-account", userHandler.DeleteUserAccount)
+
+	// stockGroup.POST("/create-stock", stockHandler.CreateStockCollection)
+	// stockGroup.POST("/create-order/:stockId", stockHandler.CreateStockOrder)
+	// stockGroup.GET("/collections", stockHandler.GetAllStockCollections)
+	// stockGroup.GET("/top-stocks", stockHandler.GetTop10Stocks)
+	// stockGroup.GET("/collection/:stockId", stockHandler.GetStockCollection)
+	// stockGroup.GET("/transaction/:stockId", stockHandler.GetStockHistory)
+	// stockGroup.POST("/set-price/:stockId", stockHandler.SetStockPrice)
+	// stockGroup.POST("/edit-name/:stockId", stockHandler.EditStockName)
+	// stockGroup.POST("/edit-sign/:stockId", stockHandler.EditStockSign)
+	// stockGroup.DELETE("/delete/:stockId", stockHandler.DeleteStockCollection)
+
+	// stockGroup.GET("/test", func(c *fiber.Ctx) error {
 	// 	// 
-	// 	// fmt.Println(c.Get("Authorization"), c.Locals("uid"))
+	// 	// fmt.Println(c.GET("Authorization"), c.Locals("uid"))
 	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 	// 		"message": "token test",
 	// 	})
 	// })
 
-	// stockGroup.Post("/test", func(c *fiber.Ctx) error {
-	// 	authorization := c.Get("Authorization")
+	// stockGroup.POST("/test", func(c *fiber.Ctx) error {
+	// 	authorization := c.GET("Authorization")
 	// 	authToken := strings.Split(authorization, " ")[0]
 		
 
@@ -234,13 +258,13 @@ func main() {
 	// 	})
 	// })
 
-	// stockGroup.Get("/", func(c *fiber.Ctx) error {
+	// stockGroup.GET("/", func(c *fiber.Ctx) error {
 	// 	fmt.Println("test")
 	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 	// 		"message": "stock is running",
 	// 	})
 	// })
-	// stockGroup.Post("/create-stock", stockHandler.CreateStockCollection)
+	// stockGroup.POST("/create-stock", stockHandler.CreateStockCollection)
 
 	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6"}
 	// specific.DeleteExceptId(excludeStockIds, db.Collection("stock"))
@@ -585,7 +609,7 @@ func main() {
 
 	// fmt.Println(result)
 
-	app.Listen(":4000")
+	app.Run(":4000")
 }
 
 func init() {

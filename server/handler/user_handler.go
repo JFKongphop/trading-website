@@ -5,6 +5,7 @@ import (
 	"server/model"
 	"server/service"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -40,45 +41,55 @@ func NewUserHandler(userService service.UserService, stockService service.StockS
 	return userHandler{userService, stockService}
 }
 
-func (h userHandler) SignUp(c *fiber.Ctx) error {
+func (h userHandler) SignUp(c *gin.Context) {
 	body := CreateAccount{}
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": ErrUser.Error(),
+
+	if err := c.ShouldBind(&body); err != nil {
+		c.JSON(400, gin.H{
+			"message": ErrData.Error(),
 		})
+
+		return
 	}
 
 	message, err := h.userService.CreateUserAccount(body)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
-	})
+	})	
 }
 
-func (h userHandler) DepositBalance(c *fiber.Ctx) error {
+func (h userHandler) DepositBalance(c *gin.Context) {
 	body := UserBalanceRequest{}
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": ErrUser.Error(),
+
+	if err := c.ShouldBind(&body); err != nil {
+		c.JSON(400, gin.H{
+			"message": ErrData.Error(),
 		})
+
+		return
 	}
 
-	uid := c.Locals("uid").(string)
+	uid := c.MustGet("uid").(string)
 	deposit := body.Balance
 	
 	message, err := h.userService.DepositBalance(uid, deposit)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 	
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
 	})
 }
