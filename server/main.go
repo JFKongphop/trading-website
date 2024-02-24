@@ -12,6 +12,7 @@ import (
 	"server/redis"
 	"server/repository"
 	"server/service"
+	wshandler "server/ws-handler"
 
 	// "server/specific"
 	"time"
@@ -105,6 +106,9 @@ func main() {
 		c.Next()
 	})
 
+	hub := wshandler.H
+	go hub.Run()
+
 
 	firebase, err := config.InitializeFirebase();
 	if err != nil {
@@ -115,6 +119,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	
 
 	// app.Use(func (c *fiber.Ctx) error {
 	// 	// path := c.Path()
@@ -141,8 +147,9 @@ func main() {
 	// 	return c.Next()
 	// })
 
-	mongoDB := InitMongoDB()
+	mongoDB := initMongoDB()
 	redisClient := redis.InitRedis()
+	initTimeZone()
 
 
 
@@ -175,7 +182,9 @@ func main() {
 	// fmt.Println(result)
 
 	userHandler := handler.NewUserHandler(userService, stockService)
-	_ = handler.NewStockHandler(stockService)
+	stockHandler := handler.NewStockHandler(stockService)
+
+	stockWebsocket := wshandler.NewStockWebsocket(stockService)
 
 	// apiV1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
 	// 	c.Set("version1", "v1")
@@ -197,6 +206,10 @@ func main() {
 		c.JSON(200, gin.H{
 			"message": "api is running in stock",
 		})
+	})
+
+	app.GET("/ws", func(c *gin.Context) {
+		stockWebsocket.ServeWs(hub, c.Writer, c.Request)
 	})
 
 
@@ -233,7 +246,7 @@ func main() {
 	// stockGroup.GET("/top-stocks", stockHandler.GetTop10Stocks)
 	// stockGroup.GET("/collection/:stockId", stockHandler.GetStockCollection)
 	// stockGroup.GET("/transaction/:stockId", stockHandler.GetStockHistory)
-	// stockGroup.POST("/set-price/:stockId", stockHandler.SetStockPrice)
+	stockGroup.POST("/set-price/:stockId", stockHandler.SetStockPrice)
 	// stockGroup.POST("/edit-name/:stockId", stockHandler.EditStockName)
 	// stockGroup.POST("/edit-sign/:stockId", stockHandler.EditStockSign)
 	// stockGroup.DELETE("/delete/:stockId", stockHandler.DeleteStockCollection)
@@ -660,7 +673,7 @@ func init() {
 	}
 }
 
-func InitMongoDB() *mongo.Client {
+func initMongoDB() *mongo.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	uri := os.Getenv("MONGO_URI")
@@ -676,4 +689,13 @@ func InitMongoDB() *mongo.Client {
 	}
 
 	return client
+}
+
+func initTimeZone() {
+	ict, err := time.LoadLocation("Asia/Bangkok")
+	if err != nil {
+		panic(err)
+	}
+
+	time.Local = ict
 }

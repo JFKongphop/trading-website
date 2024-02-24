@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -179,24 +180,50 @@ func (h stockHandler) GetStockHistory(c *fiber.Ctx) error {
 	})
 }
 
-func (h stockHandler) SetStockPrice(c *fiber.Ctx) error {
-	stockId := c.Params("stockId")
+// func (h stockHandler) SetStockPrice(c *fiber.Ctx) error {
+	// stockId := c.Params("stockId")
+	// body := SetPriceRequest{}
+
+// 	if err := c.BodyParser(&body); err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": ErrData.Error(),
+// 		})
+// 	}
+
+// 	message, err := h.stockService.SetStockPrice(stockId, body.Price)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": message,
+// 	})
+// }
+
+func (h stockHandler) SetStockPrice(c *gin.Context) {
+	stockId := c.Param("stockId")
 	body := SetPriceRequest{}
 
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.ShouldBind(&body); err != nil {
+		c.JSON(400, gin.H{
 			"message": ErrData.Error(),
 		})
+
+		return
 	}
 
 	message, err := h.stockService.SetStockPrice(stockId, body.Price)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
 	})
 }
