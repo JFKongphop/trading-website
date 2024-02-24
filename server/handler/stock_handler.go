@@ -202,6 +202,24 @@ func (h stockHandler) GetStockHistory(c *fiber.Ctx) error {
 // 	})
 // }
 
+func (h stockHandler) GetStockPrice(c *gin.Context) {
+	stockId := c.Param("stockId")
+
+	price, err := h.stockService.GetStockPrice(stockId)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Sucessfully fetched stock price",
+		"price": price,
+	})
+}
+
 func (h stockHandler) SetStockPrice(c *gin.Context) {
 	stockId := c.Param("stockId")
 	body := SetPriceRequest{}

@@ -20,6 +20,7 @@ type StockRepository interface {
 	GetStock(string) (StockCollectionResponse, error)
 	GetFavoriteStock([]string) ([]StockCollectionResponse, error)
 	GetStockHistory(string) ([]StockHistoryResponse, error) 
+	GetPrice(string) (float64, error)
 	SetPrice(string, float64) (string, error)
 	EditName(string, string) (string, error)
 	EditSign(string, string) (string, error)

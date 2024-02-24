@@ -246,6 +246,7 @@ func main() {
 	// stockGroup.GET("/top-stocks", stockHandler.GetTop10Stocks)
 	// stockGroup.GET("/collection/:stockId", stockHandler.GetStockCollection)
 	// stockGroup.GET("/transaction/:stockId", stockHandler.GetStockHistory)
+	stockGroup.GET("/price/:stockId", stockHandler.GetStockPrice)
 	stockGroup.POST("/set-price/:stockId", stockHandler.SetStockPrice)
 	// stockGroup.POST("/edit-name/:stockId", stockHandler.EditStockName)
 	// stockGroup.POST("/edit-sign/:stockId", stockHandler.EditStockSign)

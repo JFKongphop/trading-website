@@ -149,6 +149,16 @@ func (s stockService) GetStockHistory(stockId string) (stockHistories []StockHis
 	return stockHistories, nil
 }
 
+func (s stockService) GetStockPrice(stockId string) (price float64, err error) {
+	price, err = s.stockRepo.GetPrice(stockId)
+	if err != nil {
+		return 0, err
+	}
+
+	return price, nil
+}
+
+
 func (s stockService) SetStockPrice(stockId string, price float64) (message string, err error) {
 	message, err = s.stockRepo.SetPrice(stockId, price)
 	if err != nil {

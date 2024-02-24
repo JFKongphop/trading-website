@@ -345,6 +345,32 @@ func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryRespon
 	return stockHistories, nil
 }
 
+func (r stockRepositoryDB) GetPrice(stockId string) (float64, error) {
+	if len(stockId) == 0 {
+		return 0, ErrInvalidStock
+	}
+
+	objectStockId, err := primitive.ObjectIDFromHex(stockId)
+	if err != nil {
+		return 0, err
+	}
+
+	filter := bson.M{
+		"_id": objectStockId,
+	}
+	projection := bson.M{
+		"price": 1,
+	}
+	var stockPrice StockPrice
+	opts := options.FindOne().SetProjection(projection)
+	err = r.db.FindOne(ctx, filter, opts).Decode(&stockPrice)
+	if err != nil {
+		return 0, err
+	}
+
+	return stockPrice.Price, nil
+}
+
 func (r stockRepositoryDB) SetPrice(stockId string, price float64) (string, error) {
 	if len(stockId) == 0 {
 		return "", ErrInvalidStock

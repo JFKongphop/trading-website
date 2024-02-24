@@ -19,6 +19,7 @@ type StockService interface {
 	GetStockCollection(string) (StockCollectionResponse, error)
 	GetFavoriteStock([]string) ([]StockCollectionResponse, error)
 	GetStockHistory(string) ([]StockHistoryResponse, error) 
+	GetStockPrice(string) (float64, error)
 	SetStockPrice(string, float64) (string, error)
 	EditStockName(string, string) (string, error)
 	EditStockSign(string, string) (string, error)

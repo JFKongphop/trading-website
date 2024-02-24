@@ -78,6 +78,9 @@ editn:
 edits:
 	sh ${STOCK_DIR}edits.sh
 
+getp:
+	sh ${STOCK_DIR}getp.sh
+
 setp:
 	sh ${STOCK_DIR}setp.sh
 

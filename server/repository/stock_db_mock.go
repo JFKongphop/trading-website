@@ -45,6 +45,11 @@ func (m *stockRepositoryDBMock) GetStockHistory(stockId string) ([]StockHistoryR
 	return arge.Get(0).([]StockHistoryResponse), arge.Error(1)
 }
 
+func (m *stockRepositoryDBMock) GetPrice(stockId string) (float64, error) {
+	arge := m.Called(stockId)
+	return float64(arge.Int(0)), arge.Error(1)
+}
+
 func (m *stockRepositoryDBMock) SetPrice(stockId string, price float64) (string, error) {
 	arge := m.Called(stockId, price)
 	return arge.String(0), arge.Error(1)
