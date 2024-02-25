@@ -9,6 +9,8 @@ line:
 
 USER_DIR := ./bash-request/user/
 STOCK_DIR := ./bash-request/stock/
+LOOP_MOCK := ./bash-request/loop-mock/
+CLEAR := ./bash-request/clear/
 
 # /user path request
 signup:
@@ -89,3 +91,15 @@ top:
 
 tran:
 	sh ${STOCK_DIR}transaction.sh
+
+# loop mock 
+
+lsetp:
+	sh ${LOOP_MOCK}lsetp.sh
+
+lcreor:
+	sh ${LOOP_MOCK}lcreor.sh
+
+# clear
+clearsh:
+	sh ${CLEAR}clearsh.sh

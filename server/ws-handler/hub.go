@@ -44,7 +44,7 @@ func (h *Hub) Run() {
 				delete(h.rooms, s.room)
 				delete(h.activeConns, s.room)
 			}
-			fmt.Println("no", h.activeConns)
+			fmt.Println("connection", h.activeConns)
 
 		case m := <-h.broadcast:
 			connections := h.rooms[m.Room]

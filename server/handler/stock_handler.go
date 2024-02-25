@@ -91,18 +91,50 @@ func (h stockHandler) CreateStockCollection(c *fiber.Ctx) error {
 	})
 }
 
-func (h stockHandler) CreateStockOrder(c *fiber.Ctx) error {
-	stockId := c.Params("stockId")
+// func (h stockHandler) CreateStockOrder(c *fiber.Ctx) error {
+// 	stockId := c.Params("stockId")
+// 	body := CreateOrderRequest{}
+
+// 	if err := c.BodyParser(&body); err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": ErrData.Error(),
+// 		})
+// 	}
+
+// 	order := StockHistory{
+// 		ID:        c.Locals("uid").(string),
+// 		Timestamp: int64(time.Now().Unix()),
+// 		Price:     body.Price,
+// 		Amount:    body.Amount,
+// 	}
+
+// 	message, err := h.stockService.CreateStockOrder(stockId, order)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": message,
+// 	})
+// }
+
+func (h stockHandler) CreateStockOrder(c *gin.Context) {
+	stockId := c.Param("stockId")
 	body := CreateOrderRequest{}
 
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+
+	if err := c.ShouldBind(&body); err != nil {
+		c.JSON(400, gin.H{
 			"message": ErrData.Error(),
 		})
+
+		return
 	}
 
 	order := StockHistory{
-		ID:        c.Locals("uid").(string),
+		ID:        c.MustGet("uid").(string),
 		Timestamp: int64(time.Now().Unix()),
 		Price:     body.Price,
 		Amount:    body.Amount,
@@ -110,12 +142,14 @@ func (h stockHandler) CreateStockOrder(c *fiber.Ctx) error {
 
 	message, err := h.stockService.CreateStockOrder(stockId, order)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return 
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
 	})
 }
@@ -164,17 +198,35 @@ func (h stockHandler) GetStockCollection(c *fiber.Ctx) error {
 	})
 }
 
-func (h stockHandler) GetStockHistory(c *fiber.Ctx) error {
-	stockId := c.Params("stockId")
+// func (h stockHandler) GetStockHistory(c *fiber.Ctx) error {
+// 	stockId := c.Params("stockId")
+
+// 	transactions, err := h.stockService.GetStockHistory(stockId)
+// 	if err != nil {
+// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+// 			"message": err.Error(),
+// 		})
+// 	}
+
+// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+// 		"message": "successfully fetched transactions",
+// 		"transactions": transactions,
+// 	})
+// }
+
+func (h stockHandler) GetStockHistory(c *gin.Context) {
+	stockId := c.Param("stockId")
 
 	transactions, err := h.stockService.GetStockHistory(stockId)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": "successfully fetched transactions",
 		"transactions": transactions,
 	})

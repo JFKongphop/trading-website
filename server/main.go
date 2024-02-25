@@ -28,6 +28,7 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -208,9 +209,18 @@ func main() {
 		})
 	})
 
-	app.GET("/ws", func(c *gin.Context) {
-		stockWebsocket.ServeWs(hub, c.Writer, c.Request)
+	websocketGroup := app.Group("/ws/v1")
+
+	websocketGroup.GET("/price", func(c *gin.Context) {
+		stockWebsocket.ServePriceWs(hub, c.Writer, c.Request)
 	})
+
+	websocketGroup.GET("/transaction", func(c *gin.Context) {
+		stockWebsocket.ServeTransactionWs(hub, c.Writer, c.Request)
+	})
+	
+
+	app.DELETE("/stock-history/:stockId", clearStocKHistory)
 
 
 
@@ -223,6 +233,7 @@ func main() {
 	// 	c.Set("stock", "stock")
 	// 	return c.Next()
 	// })
+
 
 	userGroup.POST("/signup", userHandler.SignUp)
 	userGroup.POST("/deposit", userHandler.DepositBalance)
@@ -241,11 +252,11 @@ func main() {
 	// userGroup.DELETE("/delete-account", userHandler.DeleteUserAccount)
 
 	// stockGroup.POST("/create-stock", stockHandler.CreateStockCollection)
-	// stockGroup.POST("/create-order/:stockId", stockHandler.CreateStockOrder)
+	stockGroup.POST("/create-order/:stockId", stockHandler.CreateStockOrder)
 	// stockGroup.GET("/collections", stockHandler.GetAllStockCollections)
 	// stockGroup.GET("/top-stocks", stockHandler.GetTop10Stocks)
 	// stockGroup.GET("/collection/:stockId", stockHandler.GetStockCollection)
-	// stockGroup.GET("/transaction/:stockId", stockHandler.GetStockHistory)
+	stockGroup.GET("/transaction/:stockId", stockHandler.GetStockHistory)
 	stockGroup.GET("/price/:stockId", stockHandler.GetStockPrice)
 	stockGroup.POST("/set-price/:stockId", stockHandler.SetStockPrice)
 	// stockGroup.POST("/edit-name/:stockId", stockHandler.EditStockName)
@@ -699,4 +710,24 @@ func initTimeZone() {
 	}
 
 	time.Local = ict
+}
+
+func clearStocKHistory(c *gin.Context) {
+	mongoDB := initMongoDB()
+	db := mongoDB.Database(os.Getenv("MONGO_DATABASE"))
+	stockCollectionName := os.Getenv("MONGO_COLLECTION_STOCK")
+	stockCollection := db.Collection(stockCollectionName)
+	
+	objectStockId, _ := primitive.ObjectIDFromHex(c.Param("stockId"))
+
+	filter := bson.M{
+		"_id": objectStockId,
+	}
+	update := bson.M{
+		"$set": bson.M{
+			"stockHistory": []StockHistory{},
+		},
+	}
+
+	stockCollection.UpdateOne(ctx, filter, update)
 }

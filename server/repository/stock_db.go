@@ -313,7 +313,7 @@ func (r stockRepositoryDB) GetStockHistory(stockId string) ([]StockHistoryRespon
 		bson.D{{Key: "$sort", Value: bson.D{{
 			Key: "stockHistory.timestamp", Value: -1,
 		}}}},
-		bson.D{{Key: "$limit", Value: 10}},
+		bson.D{{Key: "$limit", Value: 2}},
 		bson.D{{Key: "$project", Value: bson.M{
 			"stockHistory.price":  1,
 			"stockHistory.amount": 1,
