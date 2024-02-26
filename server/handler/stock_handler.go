@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gofiber/fiber/v2"
 )
 
 type stockHandler struct {
@@ -26,7 +25,7 @@ type CreateStockRequest struct {
 }
 
 type SetPriceRequest struct {
-	Price  float64 `json:"price"`
+	Price float64 `json:"price"`
 }
 
 type CreateOrderRequest struct {
@@ -35,13 +34,12 @@ type CreateOrderRequest struct {
 }
 
 type EditNameRequest struct {
-	Name  string  `json:"name"`
+	Name string `json:"name"`
 }
 
 type EditSignRequest struct {
-	Sign  string  `json:"sign"`
+	Sign string `json:"sign"`
 }
-
 
 var ErrData = errs.ErrData
 
@@ -133,7 +131,6 @@ func (h stockHandler) CreateStockOrder(c *gin.Context) {
 	stockId := c.Param("stockId")
 	body := CreateOrderRequest{}
 
-
 	if err := c.ShouldBind(&body); err != nil {
 		c.JSON(400, gin.H{
 			"message": ErrData.Error(),
@@ -155,7 +152,7 @@ func (h stockHandler) CreateStockOrder(c *gin.Context) {
 			"message": err.Error(),
 		})
 
-		return 
+		return
 	}
 
 	c.JSON(200, gin.H{
@@ -163,65 +160,55 @@ func (h stockHandler) CreateStockOrder(c *gin.Context) {
 	})
 }
 
-func (h stockHandler) GetAllStockCollections(c *fiber.Ctx) error {
+func (h stockHandler) GetAllStockCollections(c *gin.Context) {
 	stocks, err := h.stockService.GetAllStockCollections()
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": "successfully fetched all stocks",
-		"stocks": stocks,
+		"stocks":  stocks,
 	})
 }
 
-func (h stockHandler) GetTop10Stocks(c *fiber.Ctx) error {
+func (h stockHandler) GetTop10Stocks(c *gin.Context) {
 	topStocks, err := h.stockService.GetTop10Stocks()
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "successfully fetched top volume stock",
+	c.JSON(200, gin.H{
+		"message":   "successfully fetched top volume stock",
 		"topStocks": topStocks,
 	})
 }
 
-func (h stockHandler) GetStockCollection(c *fiber.Ctx) error {
-	stockId := c.Params("stockId")
+func (h stockHandler) GetStockCollection(c *gin.Context) {
+	stockId := c.Param("stockId")
 
 	stock, err := h.stockService.GetStockCollection(stockId)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": "successfully fetched stock",
-		"stock": stock,
+		"stock":   stock,
 	})
 }
-
-// func (h stockHandler) GetStockHistory(c *fiber.Ctx) error {
-// 	stockId := c.Params("stockId")
-
-// 	transactions, err := h.stockService.GetStockHistory(stockId)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": err.Error(),
-// 		})
-// 	}
-
-// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-// 		"message": "successfully fetched transactions",
-// 		"transactions": transactions,
-// 	})
-// }
 
 func (h stockHandler) GetStockHistory(c *gin.Context) {
 	stockId := c.Param("stockId")
@@ -236,32 +223,10 @@ func (h stockHandler) GetStockHistory(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched transactions",
+		"message":      "successfully fetched transactions",
 		"transactions": transactions,
 	})
 }
-
-// func (h stockHandler) SetStockPrice(c *fiber.Ctx) error {
-	// stockId := c.Params("stockId")
-	// body := SetPriceRequest{}
-
-// 	if err := c.BodyParser(&body); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": ErrData.Error(),
-// 		})
-// 	}
-
-// 	message, err := h.stockService.SetStockPrice(stockId, body.Price)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": err.Error(),
-// 		})
-// 	}
-
-// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-// 		"message": message,
-// 	})
-// }
 
 func (h stockHandler) GetStockPrice(c *gin.Context) {
 	stockId := c.Param("stockId")
@@ -277,7 +242,7 @@ func (h stockHandler) GetStockPrice(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"message": "Sucessfully fetched stock price",
-		"price": price,
+		"price":   price,
 	})
 }
 
@@ -307,61 +272,71 @@ func (h stockHandler) SetStockPrice(c *gin.Context) {
 	})
 }
 
-func (h stockHandler) EditStockName(c *fiber.Ctx) error {
-	stockId := c.Params("stockId")
+func (h stockHandler) EditStockName(c *gin.Context) {
+	stockId := c.Param("stockId")
 	body := EditNameRequest{}
 
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.ShouldBind(&body); err != nil {
+		c.JSON(400, gin.H{
 			"message": ErrData.Error(),
 		})
+
+		return
 	}
 
 	message, err := h.stockService.EditStockName(stockId, body.Name)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
 	})
 }
 
-func (h stockHandler) EditStockSign(c *fiber.Ctx) error {
-	stockId := c.Params("stockId")
+func (h stockHandler) EditStockSign(c *gin.Context) {
+	stockId := c.Param("stockId")
 	body := EditSignRequest{}
 
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	if err := c.ShouldBind(&body); err != nil {
+		c.JSON(400, gin.H{
 			"message": ErrData.Error(),
 		})
+
+		return
 	}
 
 	message, err := h.stockService.EditStockSign(stockId, body.Sign)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
 	})
 }
 
-func (h stockHandler) DeleteStockCollection(c *fiber.Ctx) error {
-	stockId := c.Params("stockId")
+func (h stockHandler) DeleteStockCollection(c *gin.Context) {
+	stockId := c.Param("stockId")
 
 	message, err := h.stockService.DeleteStockCollection(stockId)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
 	})
 }

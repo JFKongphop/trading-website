@@ -253,15 +253,15 @@ func main() {
 
 	stockGroup.POST("/create-stock", stockHandler.CreateStockCollection)
 	stockGroup.POST("/create-order/:stockId", stockHandler.CreateStockOrder)
-	// stockGroup.GET("/collections", stockHandler.GetAllStockCollections)
-	// stockGroup.GET("/top-stocks", stockHandler.GetTop10Stocks)
-	// stockGroup.GET("/collection/:stockId", stockHandler.GetStockCollection)
+	stockGroup.GET("/collections", stockHandler.GetAllStockCollections)
+	stockGroup.GET("/top-stocks", stockHandler.GetTop10Stocks)
+	stockGroup.GET("/collection/:stockId", stockHandler.GetStockCollection)
 	stockGroup.GET("/transaction/:stockId", stockHandler.GetStockHistory)
 	stockGroup.GET("/price/:stockId", stockHandler.GetStockPrice)
 	stockGroup.POST("/set-price/:stockId", stockHandler.SetStockPrice)
-	// stockGroup.POST("/edit-name/:stockId", stockHandler.EditStockName)
-	// stockGroup.POST("/edit-sign/:stockId", stockHandler.EditStockSign)
-	// stockGroup.DELETE("/delete/:stockId", stockHandler.DeleteStockCollection)
+	stockGroup.POST("/edit-name/:stockId", stockHandler.EditStockName)
+	stockGroup.POST("/edit-sign/:stockId", stockHandler.EditStockSign)
+	stockGroup.DELETE("/delete/:stockId", stockHandler.DeleteStockCollection)
 
 	// stockGroup.GET("/test", func(c *fiber.Ctx) error {
 	// 	// 

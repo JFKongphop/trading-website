@@ -79,7 +79,7 @@ func (r stockRepositoryDB) CreateStockOrder(stockId string, stockOrder StockHist
 		return "", err
 	}
 
-	stockOrder.Price = stockPrice.Price
+	// stockOrder.Price = stockPrice.Price
 
 	update := bson.M{
 		"$push": bson.M{
@@ -237,6 +237,8 @@ func (r stockRepositoryDB) GetStock(stockId string) (StockCollectionResponse, er
 	if err != nil {
 		return StockCollectionResponse{}, nil
 	}
+
+	stockCollection.ID = stockId
 
 	return stockCollection, nil
 }
