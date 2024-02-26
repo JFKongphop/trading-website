@@ -150,9 +150,9 @@ func (s *subscription) writeTransaction(h stockWebsocket) {
 			}
 
 			m := map[string]interface{}{
-				"time":  time.Now().Format("15:04:05 | 2006-01-02"),
-				"room":  room,
-				"tx": tx,
+				"time": time.Now().Format("15:04:05 | 2006-01-02"),
+				"room": room,
+				"tx":   tx,
 			}
 			jsonData, err := json.Marshal(m)
 			if err != nil {

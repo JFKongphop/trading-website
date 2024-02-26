@@ -1,6 +1,9 @@
 package wshandler
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 type Hub struct {
 	rooms       map[string]map[*connection]bool
@@ -24,7 +27,7 @@ var H = &Hub{
 }
 
 func (h *Hub) Run() {
-	fmt.Println("Hub running")
+	log.Println("websocket is running")
 	for {
 		select {
 		case s := <-h.register:
@@ -35,7 +38,7 @@ func (h *Hub) Run() {
 			}
 			connections[s.conn] = true
 			h.activeConns[s.room]++
-			fmt.Println("connection", h.activeConns)
+			log.Println("connection", h.activeConns)
 
 		case s := <-h.unregister:
 			fmt.Println(s.room)
@@ -44,7 +47,7 @@ func (h *Hub) Run() {
 				delete(h.rooms, s.room)
 				delete(h.activeConns, s.room)
 			}
-			fmt.Println("connection", h.activeConns)
+			log.Println("disconnection", h.activeConns)
 
 		case m := <-h.broadcast:
 			connections := h.rooms[m.Room]

@@ -249,8 +249,8 @@ func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockC
 		}
 
 		objectStockId, err := primitive.ObjectIDFromHex(stock)
-		if err != nil {
-			return []StockCollectionResponse{}, err
+		if err == primitive.ErrInvalidHex {
+			return []StockCollectionResponse{}, ErrInvalidStock
 		}
 		objectFavoriteStocks = append(objectFavoriteStocks, objectStockId)
 	}
@@ -261,6 +261,7 @@ func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockC
 		},
 	}
 	projection := bson.M{
+		"_id":        1,
 		"name":       1,
 		"sign":       1,
 		"price":      1,
@@ -282,6 +283,7 @@ func (r stockRepositoryDB) GetFavoriteStock(favoriteStockIds []string) ([]StockC
 		}
 
 		favoriteStock := StockCollectionResponse{
+			ID:         result["_id"].(primitive.ObjectID).Hex(),
 			Name:       result["name"].(string),
 			Sign:       result["sign"].(string),
 			StockImage: result["stockImage"].(string),
