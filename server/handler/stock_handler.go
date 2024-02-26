@@ -4,6 +4,7 @@ import (
 	"server/errs"
 	"server/model"
 	"server/service"
+
 	"strconv"
 	"time"
 
@@ -48,45 +49,53 @@ func NewStockHandler(stockService service.StockService) stockHandler {
 	return stockHandler{stockService}
 }
 
-func (h stockHandler) CreateStockCollection(c *fiber.Ctx) error {
+func (h stockHandler) CreateStockCollection(c *gin.Context) {
 	file, err := c.FormFile("stock_image")
 
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "error file",
+		c.JSON(200, gin.H{
+			"message": "invalid file",
 		})
+
+		return
 	}
 
-	priceStr := c.FormValue("price")
+	priceStr := c.PostForm("price")
 	price, err := strconv.ParseFloat(priceStr, 64)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid price format",
+		c.JSON(200, gin.H{
+			"message": "invalid price",
 		})
+
+		return
 	}
 
 	blobFile, err := file.Open()
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "error bolb",
+		c.JSON(200, gin.H{
+			"message": "invalid file",
 		})
+
+		return
 	}
 
 	stock := StockCollectionRequest{
 		StockImage: blobFile,
-		Name:       c.FormValue("name"),
-		Sign:       c.FormValue("sign"),
+		Name:       c.PostForm("name"),
+		Sign:       c.PostForm("sign"),
 		Price:      price,
 	}
 
 	message, err := h.stockService.CreateStockCollection(stock)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
+
+		return
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+	c.JSON(200, gin.H{
 		"message": message,
 	})
 }

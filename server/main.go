@@ -251,7 +251,7 @@ func main() {
 	userGroup.DELETE("/delete-favorite", userHandler.DeleteFavoriteStock)
 	userGroup.DELETE("/delete-account", userHandler.DeleteUserAccount)
 
-	// stockGroup.POST("/create-stock", stockHandler.CreateStockCollection)
+	stockGroup.POST("/create-stock", stockHandler.CreateStockCollection)
 	stockGroup.POST("/create-order/:stockId", stockHandler.CreateStockOrder)
 	// stockGroup.GET("/collections", stockHandler.GetAllStockCollections)
 	// stockGroup.GET("/top-stocks", stockHandler.GetTop10Stocks)
