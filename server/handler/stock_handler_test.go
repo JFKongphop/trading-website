@@ -9,6 +9,6 @@ import (
 func TestCreateStockCollection(t *testing.T) {
 	t.Run("s", func(t *testing.T) {
 		stockService := service.NewStockServiceMock()
-		stockHandler := handler.NewStockHandler(stockService)
+		_= handler.NewStockHandler(stockService)
 	})
 }
