@@ -20,7 +20,14 @@ type StockPrice struct {
 	Price float64 `bson:"price"`
 }
 
+// type StockGraph struct {
+// 	Price float64 `json:"price"`
+// 	Timestamp int64 `json:"timestamp"`
+// }
+
 type StockGroup = model.StockGroup
+type Graph = model.Graph
+type StockGraph = model.StockGraph
 
 var (
 	ErrPrice = errs.ErrPrice
@@ -375,6 +382,58 @@ func (r stockRepositoryDB) GetPrice(stockId string) (float64, error) {
 	return stockPrice.Price, nil
 }
 
+func (r stockRepositoryDB) GetGraph(stockId string) ([]StockGraph, error) {
+	objectStockId, err := primitive.ObjectIDFromHex(stockId)
+	if err != nil {
+		return []StockGraph{}, err
+	}
+
+	filter := bson.M{
+		"_id": objectStockId,
+	}
+
+	pipeline := mongo.Pipeline{
+    bson.D{{Key: "$match", Value: filter}},
+    bson.D{{Key: "$unwind", Value: "$stockHistory"}},
+		bson.D{{Key: "$sort", Value: bson.M{
+			"stockHistory.timestamp": -1,
+		}}},
+    bson.D{{Key: "$match", Value: bson.M{
+			"stockHistory.timestamp": bson.M{
+				"$gt": 1709004689,
+			},
+		}}},
+    bson.D{{Key: "$project", Value: bson.M{"stockHistory": 1}}},
+		bson.D{{Key: "$project", Value: bson.M{
+			"_id": 0,
+			"stockHistory.timestamp": 1,
+			"stockHistory.price": 1,
+		}}},
+	}
+
+	cursor, err := r.db.Aggregate(ctx, pipeline)
+	if err != nil {
+		return []StockGraph{}, ErrInvalidStock
+	}
+	defer cursor.Close(ctx)
+
+	var groups []StockGraph
+	for cursor.Next(ctx) {
+		var result bson.M
+		if err := cursor.Decode(&result); err != nil {
+			return []StockGraph{}, ErrInvalidStock
+		}
+
+		stockHistory := result["stockHistory"].(bson.M)
+		groups = append(groups, StockGraph{
+			Price: stockHistory["price"].(float64),
+			Timestamp: stockHistory["timestamp"].(int64),
+		})
+	}
+
+	return groups, nil
+}
+
 func (r stockRepositoryDB) SetPrice(stockId string, price float64) (string, error) {
 	if len(stockId) == 0 {
 		return "", ErrInvalidStock
@@ -489,15 +548,3 @@ func (r stockRepositoryDB) DeleteStock(stockId string) (string, error) {
 
 	return "Successfully deleted stock", nil
 }
-
-// idValues := []string{"id1", "id2", "id3"} // Replace with your actual _id values
-
-// // Construct the filter to find documents by _id values
-// filter := bson.M{"_id": bson.M{"$in": idValues}}
-
-// // Perform the find operation
-// cursor, err := collection.Find(context.Background(), filter)
-// if err != nil {
-// 	log.Fatal(err)
-// }
-// defer cursor.Close(context.Background())

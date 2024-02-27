@@ -6,12 +6,14 @@ import (
 	"server/model"
 	"server/repository"
 	"server/util"
+	"sort"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
 type StockRepository = repository.StockRepository
+type StockGraph = model.StockGraph
 
 type stockService struct {
 	stockRepo   StockRepository
@@ -156,6 +158,58 @@ func (s stockService) GetStockPrice(stockId string) (price float64, err error) {
 	}
 
 	return price, nil
+}
+
+func (s stockService) GetStockGraph(stockId string) (graph []Graph, err error) {
+	stockGraph, err := s.stockRepo.GetGraph(stockId)
+	if err != nil {
+		return []Graph{}, err
+	}
+
+	groupedData := make(map[int64][]StockGraph)
+
+	for _, item := range stockGraph {
+		interval := item.Timestamp / 5 * 5
+		groupedData[interval] = append(groupedData[interval], item)
+	}
+
+	var keys []int64
+	for key := range groupedData {
+		keys = append(keys, key)
+	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+
+	for _, timestamp := range keys {
+		items := groupedData[timestamp]
+		fmt.Printf("Timestamp: %d\n", timestamp)
+		min := items[0].Price
+		max := items[0].Price
+		for i, item := range items {
+			if items[i].Price < min {
+				min = item.Price
+			}
+			if items[i].Price > max {
+				max = item.Price
+			}
+			// fmt.Println("Price:", item.Price, "timestamp:", item.Timestamp)
+		}
+
+		// Y -> [open, max, min, close]
+		graph = append(graph, Graph{
+			X: timestamp,
+			Y: []float64{
+				items[len(items) - 1].Price,
+				max,
+				min,
+				items[0].Price,
+			},
+		})
+	}
+
+	return graph, nil
 }
 
 

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
@@ -91,12 +92,6 @@ var ctx = context.Background()
 var uploader *model.ClientUploader
 
 func main() {
-	// app := fiber.New(fiber.Config{
-	// 	Prefork: true,
-	// })
-	// app.Use(cors.New())
-	// app.Use(logger.New())
-
 	app := gin.Default()
 	gin.SetMode(gin.ReleaseMode)
 
@@ -110,6 +105,8 @@ func main() {
 	hub := wshandler.H
 	go hub.Run()
 
+	// clearStocKHistory()
+
 
 	firebase, err := config.InitializeFirebase();
 	if err != nil {
@@ -120,8 +117,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	
 
 	// app.Use(func (c *fiber.Ctx) error {
 	// 	// path := c.Path()
@@ -166,48 +161,21 @@ func main() {
 	userService := service.NewUserService(userRepositoryDB, redisClient)
 	stockService := service.NewStockService(stockRepositoryDB, redisClient, uploader)
 
-	// var result model.UserAccount
-	// userCollection.FindOne(ctx, bson.M{"uid": "MuwWsOQmD3PPRuMOlXh6SUbEVtn2"}).Decode(&result)
-	// fmt.Println(result)
-
-	// result, err := userRepositoryDB.GetAccount("MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
+	// graph, err := stockService.GetStockGraph("65d60a2dc25b2ff14700a3c2")
 	// if err != nil {
 	// 	log.Fatal(err)
 	// }
 
-	// result, err := userRepositoryDB.DeleteAccount("MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
+	// fmt.Println(graph)
 
 	userHandler := handler.NewUserHandler(userService, stockService)
 	stockHandler := handler.NewStockHandler(stockService)
-
 	stockWebsocket := wshandler.NewStockWebsocket(stockService)
-
-	// apiV1 := app.Group("/api/v1", func(c *fiber.Ctx) error {
-	// 	c.Set("version1", "v1")
-	// 	return c.Next()
-	// })
 
 	apiV1 := app.Group("/api/v1")
 
 	userGroup := apiV1.Group("/user")
 	stockGroup := apiV1.Group("/stock")
-
-	userGroup.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "api is running in user",
-		})
-	})
-
-	stockGroup.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "api is running in stock",
-		})
-	})
 
 	websocketGroup := app.Group("/ws/v1")
 
@@ -220,20 +188,7 @@ func main() {
 	})
 	
 
-	app.DELETE("/stock-history/:stockId", clearStocKHistory)
-
-
-
-	// userGroup := apiV1.Group("/user", func(c *fiber.Ctx) error {
-	// 	c.Set("user", "user")
-	// 	return c.Next()
-	// })
-
-	// stockGroup := apiV1.Group("/stock", func(c *fiber.Ctx) error {
-	// 	c.Set("stock", "stock")
-	// 	return c.Next()
-	// })
-
+	// app.DELETE("/stock-history/:stockId", ClearStocKHistory)
 
 	userGroup.POST("/signup", userHandler.SignUp)
 	userGroup.POST("/deposit", userHandler.DepositBalance)
@@ -258,381 +213,11 @@ func main() {
 	stockGroup.GET("/collection/:stockId", stockHandler.GetStockCollection)
 	stockGroup.GET("/transaction/:stockId", stockHandler.GetStockHistory)
 	stockGroup.GET("/price/:stockId", stockHandler.GetStockPrice)
+	stockGroup.GET("/graph/:stockId", stockHandler.GetStockGraph)
 	stockGroup.POST("/set-price/:stockId", stockHandler.SetStockPrice)
 	stockGroup.POST("/edit-name/:stockId", stockHandler.EditStockName)
 	stockGroup.POST("/edit-sign/:stockId", stockHandler.EditStockSign)
 	stockGroup.DELETE("/delete/:stockId", stockHandler.DeleteStockCollection)
-
-	// stockGroup.GET("/test", func(c *fiber.Ctx) error {
-	// 	// 
-	// 	// fmt.Println(c.GET("Authorization"), c.Locals("uid"))
-	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	// 		"message": "token test",
-	// 	})
-	// })
-
-	// stockGroup.POST("/test", func(c *fiber.Ctx) error {
-	// 	authorization := c.GET("Authorization")
-	// 	authToken := strings.Split(authorization, " ")[0]
-		
-
-	// 	fmt.Println(authToken)
-
-	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	// 		"message": "success",
-	// 	})
-	// })
-
-	// stockGroup.GET("/", func(c *fiber.Ctx) error {
-	// 	fmt.Println("test")
-	// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-	// 		"message": "stock is running",
-	// 	})
-	// })
-	// stockGroup.POST("/create-stock", stockHandler.CreateStockCollection)
-
-	// excludeStockIds := []string{"65cc5fd45aa71b64fbb551a9", "65cc5fff0ca63a9e1e8b4db6"}
-	// specific.DeleteExceptId(excludeStockIds, db.Collection("stock"))
-
-	// excludeUserIds := []string{"65c8993c48096b5150cee5d6"}
-	// specific.DeleteExceptId(excludeUserIds, db.Collection("user"))
-
-	// var objectStockIdTest = []primitive.ObjectID{}
-	// for _, id := range excludeIDs {
-	// 	objectStockId, err := primitive.ObjectIDFromHex(id)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-
-	// 	objectStockIdTest = append(objectStockIdTest, objectStockId)
-	// }
-	// filter := bson.M{"_id": bson.M{"$nin": objectStockIdTest}}
-	// db.Collection("stock").DeleteMany(context.Background(), filter)
-
-	// objectId, err := primitive.ObjectIDFromHex("65c30de7b654c0e7bf938081")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// filter := bson.M{
-	// 	"_id": objectId,
-	// 	// "userStock.stockId": "65bf707e040d36a26f4bf523",
-	//   // "userStock.amount": 201,
-	// }
-
-	// CREATE
-	// account := model.CreateAccount{
-	// 	UID:           "MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
-	// 	Name:         "JFKongphop",
-	// 	ProfileImage: "test",
-	// 	Email:        "kongphopleo@gmail.com",
-	// }
-
-	// result, err := userRepositoryDB.Create(account)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// result, err := userService.CreateUserAccount(account)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(result)
-
-	// // DEPOSIT
-	// result, err := userService.DepositBalance(
-	// 	"65c8993c48096b5150cee5d6",
-	// 	1,
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// // WITHDRAW
-	// result, err := userService.WithdrawBalance(
-	// 	"65c8993c48096b5150cee5d6",
-	// 	1,
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// SET FAVORITE
-	// result, err := userRepositoryDB.SetFavorite(
-	// 	"MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
-	// 	"65c39a12c4e3672bcbf15b0f",
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// projection := bson.M{
-	// 	"favorite": 1,
-	// 	"uid": 1,
-	// }
-	// var favoriteStock FavoriteStock
-	// opts := options.FindOne().SetProjection(projection)
-	// userCollection.FindOne(ctx, bson.M{"uid": "MuwWsOQmD3PPRuMOlXh6SUbEVtn2"}, opts).Decode(&favoriteStock)
-	// fmt.Println(favoriteStock)
-
-	// update := bson.M{
-	// 	"$push": bson.M{
-	// 		"favorite": "tettet",
-	// 	},
-	// }
-	// a, _ := userCollection.UpdateOne(ctx, bson.M{"uid": "MuwWsOQmD3PPRuMOlXh6SUbEVtn2"}, update)
-	// fmt.Println(a)
-
-
-
-
-	// GET BALANCE HISTORY
-	// result, err := userRepositoryDB.GetBalanceHistory(
-	// 	"MuwWsOQmD3PPRuMOlXh6SUbEVtn2",
-	// 	"DEPOSIT",
-	// 	0,
-	// )
-	// if err != nil {
-	// 	log.Fatal()
-	// }
-
-	// fmt.Println(result)
-
-	// BUY editd id
-	// orderRequest := model.OrderRequest{
-	// 	StockId:     "65c39a03dfb8060d99995934",
-	// 	UserId:      "65c8993c48096b5150cee5d6",
-	// 	Price:       60,
-	// 	Amount:      8,
-	// 	OrderType:   "auto",
-	// 	OrderMethod: "buy",
-	// }
-
-	// result, err := userRepositoryDB.Buy(orderRequest)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(result)
-
-	// SALE
-	// orderRequest := model.OrderRequest{
-	// 	StockId: "65bf707e040d36a26f4bf523",
-	// 	UserId: "65c30de7b654c0e7bf938081",
-	// 	Price: 10,
-	// 	Amount: 100,
-	// 	OrderType: "auto",
-	// 	OrderMethod: "sale",
-	// }
-
-	// result, err := userRepositoryDB.Sale(orderRequest)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(result)
-
-	// GET ACCOUNT
-	// result, err := userService.GetUserAccount("65c8993c48096b5150cee5d6")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(result)
-
-	// GET HISTORIES
-	// result, err := userService.GetUserTradingHistories("65c8993c48096b5150cee5d6", 0)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET STOCK HISTORIES
-	// stockId 65c35c9a832ed6ceda9a6b0f
-	// result, err := userService.GetUserStockHistory(
-	// 	"65c8993c48096b5150cee5d6",
-	// 	"65c39a12c4e3672bcbf15b0f",
-	// 	1,
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET BALANCE
-	// result, err := userService.GetBalance("65c4fa33835f044a5c8ed063")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// result, err := userService.GetUserBalance("65c8993c48096b5150cee5d6")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET FAVORITE
-	// result, err := userService.GetFavoriteStock("65c8993c48096b5150cee5d6")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET STOCK AMOUNT
-	// result, err := userService.GetUserStockAmount(
-	// 	"65c8993c48096b5150cee5d6",
-	// 	"65c39a12c4e3672bcbf15b0f",
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// DELETE FAVORITE STOCK
-	// result, err := userRepositoryDB.DeleteFavorite(
-	// 	"65c4fa33835f044a5c8ed063",
-	// 	"65c39a03dfb8060d99995934",
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// DELETE ACCOUNT
-	// result, err := userRepositoryDB.DeleteAccount("65c382330d619735e53b96fc")
-	// if err != nil {
-	// 	log.Fatal(result)
-	// }
-
-	// fmt.Println(result)
-
-	// STOCK
-
-	// CREATE STOCK COLLECTION
-	// stockCollection := StockCollection{
-	// 	StockImage: "test-image",
-	// 	Name:       "test",
-	// 	Sign:       "test",
-	// 	Price:      20,
-	// 	History:    []StockHistory{},
-	// }
-
-	// result, err := stockService.CreateStockCollection(stockCollection)
-	// if err != nil {
-	// 	log.Fatal(result)
-	// }
-
-	// fmt.Println(result)
-
-	// GET ALL STOCK
-	// result, err := stockService.GetAllStockCollections()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result[2])
-
-	// CREATE STOCK ORDER
-	// stockHistory := StockHistory{
-	// 	ID: "65c8993c48096b5150cee5d6",
-	// 	Timestamp: int64(time.Now().Unix()),
-	// 	Amount: 1,
-	// 	Price: 12,
-	// }
-	// result, err := stockService.CreateStockOrder(
-	// 	"65ccda6623a24436ee69d21f",
-	// 	stockHistory,
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// EDIT NAME
-	// result, err := stockService.EditStockName(
-	// 	"65ccda6623a24436ee69d21f",
-	// 	"TEST",
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// EDIT SIGN
-	// result, err := stockService.EditStockSign(
-	// 	"65ccda6623a24436ee69d21f",
-	// 	"T",
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// SET PRICE
-	// result, err := stockService.SetStockPrice(
-	// 	"65ccda6623a24436ee69d21f",
-	// 	11.11,
-	// )
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET FAVORITE STOCK
-	// var stocks []string = []string{"65ccda6623a24436ee69d21f"}
-	// result, err := stockService.GetFavoriteStock(stocks)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET HISTORY STOCK
-	// result, err := stockService.GetStockHistory("65ccda6623a24436ee69d21f")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET STOCK
-	// result, err := stockService.GetStockCollection("65ccda6623a24436ee69d21f")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// GET TOP STOCK
-	// result, err := stockService.GetTop10Stocks()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
-
-	// result, err := stockService.DeleteStockCollection("65ccddc168d59a209e58cc82")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Println(result)
 
 	app.Run(":4000")
 }
@@ -712,13 +297,13 @@ func initTimeZone() {
 	time.Local = ict
 }
 
-func clearStocKHistory(c *gin.Context) {
+func ClearStocKHistory(c *gin.Context) {
 	mongoDB := initMongoDB()
 	db := mongoDB.Database(os.Getenv("MONGO_DATABASE"))
 	stockCollectionName := os.Getenv("MONGO_COLLECTION_STOCK")
 	stockCollection := db.Collection(stockCollectionName)
 	
-	objectStockId, _ := primitive.ObjectIDFromHex(c.Param("stockId"))
+	objectStockId, _ := primitive.ObjectIDFromHex("65d60a2dc25b2ff14700a3c2" )
 
 	filter := bson.M{
 		"_id": objectStockId,
@@ -730,4 +315,6 @@ func clearStocKHistory(c *gin.Context) {
 	}
 
 	stockCollection.UpdateOne(ctx, filter, update)
+
+	fmt.Println("done")
 }

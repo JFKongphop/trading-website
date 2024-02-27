@@ -83,6 +83,9 @@ edits:
 getp:
 	sh ${STOCK_DIR}getp.sh
 
+graph:
+	sh ${STOCK_DIR}graph.sh
+
 setp:
 	sh ${STOCK_DIR}setp.sh
 

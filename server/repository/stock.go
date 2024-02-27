@@ -10,7 +10,6 @@ type StockHistory = model.StockHistory
 type StockCollectionResponse = model.StockCollectionResponse
 type StockHistoryResponse = model.StockHistoryResponse
 
-// first his 1707319626
 
 type StockRepository interface {
 	CreateStock(StockCollection) (string, error)
@@ -21,6 +20,7 @@ type StockRepository interface {
 	GetFavoriteStock([]string) ([]StockCollectionResponse, error)
 	GetStockHistory(string) ([]StockHistoryResponse, error) 
 	GetPrice(string) (float64, error)
+	GetGraph(string) ([]StockGraph, error)
 	SetPrice(string, float64) (string, error)
 	EditName(string, string) (string, error)
 	EditSign(string, string) (string, error)

@@ -6,18 +6,20 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type StockHistory struct {
-	ID        string  `bson:"userId,omitempty" json:"userId"`
-	Timestamp int64   `bson:"timestamp" json:"timestamp"`
-	Amount    float64 `bson:"amount" json:"amount"`
-	Price     float64 `bson:"price" json:"price"`
-}
+
 
 type StockCollectionRequest struct {
 	StockImage multipart.File `bson:"stockImage"`
 	Name       string         `bson:"name"`
 	Sign       string         `bson:"sign"`
 	Price      float64        `bson:"price"`
+}
+
+type StockHistory struct {
+	ID        string  `bson:"userId,omitempty" json:"userId"`
+	Timestamp int64   `bson:"timestamp" json:"timestamp"`
+	Amount    float64 `bson:"amount" json:"amount"`
+	Price     float64 `bson:"price" json:"price"`
 }
 
 type StockCollection struct {
@@ -62,4 +64,14 @@ type StockGroup struct {
 	Sign       string  `json:"sign"`
 	StockImage string  `json:"stockImage"`
 	Volume     float64 `json:"volume"`
+}
+
+type StockGraph struct {
+	Price float64 `json:"price"`
+	Timestamp int64 `json:"timestamp"`
+}
+
+type Graph struct {
+	X int64 `json:"x"`
+	Y []float64 `json:"y"` 
 }

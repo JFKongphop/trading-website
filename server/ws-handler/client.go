@@ -171,6 +171,47 @@ func (s *subscription) writeTransaction(h stockWebsocket) {
 	}
 }
 
+func (s *subscription) writeGraph(h stockWebsocket) {
+	c := s.conn
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		ticker.Stop()
+		c.ws.Close()
+	}()
+
+	for {
+		select {
+		case _, ok := <-c.send:
+			if !ok {
+				return
+			}
+
+			room := strings.Split(s.room, "-")[1]
+			graph, err := h.stockService.GetStockGraph(room)
+			if err != nil {
+				log.Printf("error %s", err)
+			}
+
+			m := map[string]interface{}{
+				"graph": graph,
+			}
+			jsonData, err := json.Marshal(m)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			if err := c.write(websocket.TextMessage, jsonData); err != nil {
+				return
+			}
+
+		case <-ticker.C:
+			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
+				return
+			}
+		}
+	}
+}
+
 func (h stockWebsocket) ServePriceWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -219,6 +260,36 @@ func (h stockWebsocket) ServeTransactionWs(hub *Hub, w http.ResponseWriter, r *h
 	s.room = fmt.Sprintf("tx-%s", strings.Trim(s.room, " "))
 	hub.register <- s
 	go s.writeTransaction(h)
+	go s.readPump()
+
+	go func() {
+		ticker := time.NewTicker(3 * time.Second)
+		defer ticker.Stop()
+		for range ticker.C {
+			message := fmt.Sprintf("stock -> %s", roomId)
+			s.conn.send <- []byte(message)
+		}
+	}()
+}
+
+func (h stockWebsocket) ServeGraphWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Fatal("this error", err)
+	}
+
+	queryValues := r.URL.Query()
+	roomId := queryValues.Get("stockId")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	c := &connection{ws, make(chan []byte, 256)}
+	s := subscription{c, roomId}
+
+	s.room = fmt.Sprintf("tx-%s", strings.Trim(s.room, " "))
+	hub.register <- s
+	go s.writeGraph(h)
 	go s.readPump()
 
 	go func() {

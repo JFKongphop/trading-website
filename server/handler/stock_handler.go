@@ -98,35 +98,6 @@ func (h stockHandler) CreateStockCollection(c *gin.Context) {
 	})
 }
 
-// func (h stockHandler) CreateStockOrder(c *fiber.Ctx) error {
-// 	stockId := c.Params("stockId")
-// 	body := CreateOrderRequest{}
-
-// 	if err := c.BodyParser(&body); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": ErrData.Error(),
-// 		})
-// 	}
-
-// 	order := StockHistory{
-// 		ID:        c.Locals("uid").(string),
-// 		Timestamp: int64(time.Now().Unix()),
-// 		Price:     body.Price,
-// 		Amount:    body.Amount,
-// 	}
-
-// 	message, err := h.stockService.CreateStockOrder(stockId, order)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-// 			"message": err.Error(),
-// 		})
-// 	}
-
-// 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-// 		"message": message,
-// 	})
-// }
-
 func (h stockHandler) CreateStockOrder(c *gin.Context) {
 	stockId := c.Param("stockId")
 	body := CreateOrderRequest{}
@@ -243,6 +214,24 @@ func (h stockHandler) GetStockPrice(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Sucessfully fetched stock price",
 		"price":   price,
+	})
+}
+
+func (h stockHandler) GetStockGraph(c *gin.Context) {
+	stockId := c.Param("stockId")
+
+	graph, err := h.stockService.GetStockGraph(stockId)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"message": err.Error(),
+		})
+
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Successfully fetched stock graph",
+		"graph": graph,
 	})
 }
 
