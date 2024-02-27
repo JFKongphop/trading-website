@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	// "math/rand"
 	"os"
+	"time"
 
 	"server/config"
 	"server/handler"
@@ -13,18 +15,10 @@ import (
 	"server/redis"
 	"server/repository"
 	"server/service"
-	wshandler "server/ws-handler"
-
-	// "server/specific"
-	"time"
+	"server/ws-handler"
 
 	"cloud.google.com/go/storage"
 	"github.com/gin-gonic/gin"
-
-	// "github.com/gofiber/fiber/v2"
-
-	// "github.com/gofiber/fiber/v2/middleware/cors"
-	// "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
@@ -46,31 +40,8 @@ type Person struct {
 
 type FavoriteStock struct {
 	Favorite []string `bson:"favorite"`
-	UID string `bson:"uid"`
+	UID      string   `bson:"uid"`
 }
-
-// type UserHistory struct {
-// 	Timestamp uint   `bson:"timestamp"`
-// 	Name      string `bson:"name"`
-// 	Price     uint   `bson:"price"`
-// 	Amount    uint   `bson:"amount"`
-// 	Status    string `bson:"status"`
-// }
-
-// type UserStock struct {
-// 	Name   string `bson:"name"`
-// 	Amount uint   `bson:"amount"`
-// }
-
-// type User struct {
-// 	ID           primitive.ObjectID `bson:"_id,omitempty"`
-// 	Name         string             `bson:"name"`
-// 	ProfileImage string             `bson:"profileImage"`
-// 	Email        string             `bson:"email"`
-// 	RegisterDate uint               `bson:"registerDate"`
-// 	History      []UserHistory      `bson:"userHistory"`
-// 	Stock        []UserStock        `bson:"userStock"`
-// }
 
 type Stock struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
@@ -87,28 +58,26 @@ type UserStock = model.UserStock
 type OrderRequest model.OrderRequest
 type StockCollection = model.StockCollection
 type StockHistory = model.StockHistory
+type StockOrder = model.StockHistory
 
 var ctx = context.Background()
 var uploader *model.ClientUploader
 
 func main() {
 	app := gin.Default()
-	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 
 	app.Use(cors.Default())
-	app.Use(gin.Logger())
-	app.Use(func(c *gin.Context) {		
-		c.Set("uid", "test12345")
-		c.Next()
-	})
+	// app.Use(gin.Logger())
+	// app.Use(func(c *gin.Context) {
+	// 	c.Set("uid", "test12345")
+	// 	c.Next()
+	// })
 
 	hub := wshandler.H
 	go hub.Run()
 
-	// clearStocKHistory()
-
-
-	firebase, err := config.InitializeFirebase();
+	firebase, err := config.InitializeFirebase()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,7 +93,7 @@ func main() {
 	// 	// if strings.Contains(path, "signin") || strings.Contains(path, "signup") {
 	// 	// 	return c.Next()
 	// 	// }
-		
+
 	// 	// authorization := c.GET("Authorization")
 	// 	// if len(authorization) == 0 {
 	// 	// 	log.Fatalf("error token: %v\n", err)
@@ -137,7 +106,7 @@ func main() {
 
 	// 	// c.Locals("uid", token.UID)
 
-	// 	// mockup set 
+	// 	// mockup set
 	// 	c.Locals("uid", "MuwWsOQmD3PPRuMOlXh6SUbEVtn2")
 
 	// 	return c.Next()
@@ -146,8 +115,6 @@ func main() {
 	mongoDB := initMongoDB()
 	redisClient := redis.InitRedis()
 	initTimeZone()
-
-
 
 	db := mongoDB.Database(os.Getenv("MONGO_DATABASE"))
 	userCollectionName := os.Getenv("MONGO_COLLECTION_USER")
@@ -161,9 +128,28 @@ func main() {
 	userService := service.NewUserService(userRepositoryDB, redisClient)
 	stockService := service.NewStockService(stockRepositoryDB, redisClient, uploader)
 
-	// graph, err := stockService.GetStockGraph("65d60a2dc25b2ff14700a3c2")
-	// if err != nil {
-	// 	log.Fatal(err)
+	// ClearStocKHistory()
+	// for i := 0; i < 200; i++ {
+	// 	a := time.Duration(i * 12 * int(time.Minute))
+	// 	rand.Seed(time.Now().UnixNano())
+
+	// 	stockOrder := StockHistory{
+	// 		ID: "",
+	// 		Amount: float64(rand.Intn(10) + 1),
+	// 		Price: float64(rand.Intn(61) + 40),
+	// 		Timestamp: time.Now().Add(a).Unix(),
+	// 	}
+
+	// 	update := bson.M{
+	// 		"$push": bson.M{
+	// 			"stockHistory": stockOrder,
+	// 		},
+	// 	}
+
+	// 	objectStockId, _ := primitive.ObjectIDFromHex("65d60a2dc25b2ff14700a3c2")
+	// 	stockCollection.UpdateOne(ctx, bson.M{
+	// 		"_id": objectStockId,
+	// 	}, update)
 	// }
 
 	// fmt.Println(graph)
@@ -174,6 +160,12 @@ func main() {
 
 	apiV1 := app.Group("/api/v1")
 
+	app.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "ok",
+		})
+	})
+
 	userGroup := apiV1.Group("/user")
 	stockGroup := apiV1.Group("/stock")
 
@@ -182,11 +174,12 @@ func main() {
 	websocketGroup.GET("/price", func(c *gin.Context) {
 		stockWebsocket.ServePriceWs(hub, c.Writer, c.Request)
 	})
-
 	websocketGroup.GET("/transaction", func(c *gin.Context) {
 		stockWebsocket.ServeTransactionWs(hub, c.Writer, c.Request)
 	})
-	
+	websocketGroup.GET("/graph", func(c *gin.Context) {
+		stockWebsocket.ServeGraphWs(hub, c.Writer, c.Request)
+	})
 
 	// app.DELETE("/stock-history/:stockId", ClearStocKHistory)
 
@@ -297,13 +290,13 @@ func initTimeZone() {
 	time.Local = ict
 }
 
-func ClearStocKHistory(c *gin.Context) {
+func ClearStocKHistory( /*c *gin.Context*/ ) {
 	mongoDB := initMongoDB()
 	db := mongoDB.Database(os.Getenv("MONGO_DATABASE"))
 	stockCollectionName := os.Getenv("MONGO_COLLECTION_STOCK")
 	stockCollection := db.Collection(stockCollectionName)
-	
-	objectStockId, _ := primitive.ObjectIDFromHex("65d60a2dc25b2ff14700a3c2" )
+
+	objectStockId, _ := primitive.ObjectIDFromHex("65d60a2dc25b2ff14700a3c2")
 
 	filter := bson.M{
 		"_id": objectStockId,

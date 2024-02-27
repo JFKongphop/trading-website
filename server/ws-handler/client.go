@@ -287,7 +287,7 @@ func (h stockWebsocket) ServeGraphWs(hub *Hub, w http.ResponseWriter, r *http.Re
 	c := &connection{ws, make(chan []byte, 256)}
 	s := subscription{c, roomId}
 
-	s.room = fmt.Sprintf("tx-%s", strings.Trim(s.room, " "))
+	s.room = fmt.Sprintf("graph-%s", strings.Trim(s.room, " "))
 	hub.register <- s
 	go s.writeGraph(h)
 	go s.readPump()

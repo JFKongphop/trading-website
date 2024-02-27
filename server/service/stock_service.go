@@ -169,7 +169,7 @@ func (s stockService) GetStockGraph(stockId string) (graph []Graph, err error) {
 	groupedData := make(map[int64][]StockGraph)
 
 	for _, item := range stockGraph {
-		interval := item.Timestamp / 5 * 5
+		interval := item.Timestamp / 3600 * 3600
 		groupedData[interval] = append(groupedData[interval], item)
 	}
 
@@ -184,7 +184,7 @@ func (s stockService) GetStockGraph(stockId string) (graph []Graph, err error) {
 
 	for _, timestamp := range keys {
 		items := groupedData[timestamp]
-		fmt.Printf("Timestamp: %d\n", timestamp)
+		// fmt.Printf("Timestamp: %d\n", timestamp)
 		min := items[0].Price
 		max := items[0].Price
 		for i, item := range items {

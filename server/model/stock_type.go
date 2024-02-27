@@ -6,8 +6,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-
-
 type StockCollectionRequest struct {
 	StockImage multipart.File `bson:"stockImage"`
 	Name       string         `bson:"name"`
