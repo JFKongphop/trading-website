@@ -10,7 +10,6 @@ func NewUserServiceMock() *userServiceMock {
 	return &userServiceMock{}
 }
 
-
 func (m *userServiceMock) CreateUserAccount(userAccount CreateAccount) (string, error) {
 	arge := m.Called(userAccount)
 	return arge.String(0), arge.Error(1)
