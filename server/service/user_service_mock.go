@@ -17,12 +17,12 @@ func (m *userServiceMock) CreateUserAccount(userAccount CreateAccount) (string, 
 
 func (m *userServiceMock) DepositBalance(userId string, depositMoney float64) (string, error) {
 	arge := m.Called(userId, depositMoney)
-	return arge.String(0), arge.Error(0)
+	return arge.String(0), arge.Error(1)
 }
 
 func (m *userServiceMock) WithdrawBalance(userId string, withdrawMoney float64) (string, error) {
 	arge := m.Called(userId, withdrawMoney)
-	return arge.String(0), arge.Error(0)
+	return arge.String(0), arge.Error(1)
 }
 
 func (m *userServiceMock) BuyStock(orderRequest OrderRequest) (string, error) {
@@ -42,7 +42,7 @@ func (m *userServiceMock) SetFavoriteStock(userId string, stockId string) (strin
 
 func (m *userServiceMock) GetUserBalanceHistory(userId string, method string, perPage uint) ([]BalanceHistory, error) {
 	arge := m.Called(userId, method, perPage)
-	return arge.Get(0).([]BalanceHistory), arge.Error(0)
+	return arge.Get(0).([]BalanceHistory), arge.Error(1)
 }
 
 func (m *userServiceMock) GetUserBalance(userId string) (float64, error) {

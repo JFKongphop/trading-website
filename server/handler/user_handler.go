@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"server/errs"
 	"server/model"
 	"server/service"
@@ -17,17 +18,10 @@ type userHandler struct {
 type CreateAccount = model.CreateAccount
 type OrderRequest = model.OrderRequest
 
-type UserIdRequest struct {
-	UID string `json:"uid"`
-}
+type UserIdRequest = model.UserIdRequest
 
-type UserBalanceRequest struct {
-	Balance float64 `json:"balance"`
-}
-
-type UserSetFavoriteRequest struct {
-	StockId string `json:"stockId"`
-}
+type UserBalanceRequest = model.UserBalanceRequest
+type UserSetFavoriteRequest = model.UserSetFavoriteRequest
 
 type FilterBalanceRequest struct {
 	Method string `json:"method"`
@@ -69,7 +63,6 @@ func (h userHandler) SignUp(c *gin.Context) {
 func (h userHandler) DepositBalance(c *gin.Context) {
 	body := UserBalanceRequest{}
 
-
 	if err := c.ShouldBind(&body); err != nil {
 		c.JSON(400, gin.H{
 			"message": ErrData.Error(),
@@ -80,6 +73,7 @@ func (h userHandler) DepositBalance(c *gin.Context) {
 
 	uid := c.MustGet("uid").(string)
 	deposit := body.Balance
+	fmt.Println("test", uid, deposit)
 	
 	message, err := h.userService.DepositBalance(uid, deposit)
 	if err != nil {
@@ -229,6 +223,7 @@ func (h userHandler) GetUserBalanceHistory(c *gin.Context) {
 
 		return
 	}
+	fmt.Println(startPage)
 	uid := c.MustGet("uid").(string)
 	method := c.Query("method")
 
@@ -242,7 +237,7 @@ func (h userHandler) GetUserBalanceHistory(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched transaction balance",
+		"message": "Successfully fetched transaction balance",
 		"transactions": transaction,
 	})
 }
@@ -268,9 +263,8 @@ func (h userHandler) GetUserFavoriteStock(c *gin.Context) {
 		return
 	}
 
-
 	c.JSON(200, gin.H{
-		"message": "successfully fetched favorite stock",
+		"message": "Successfully fetched favorite stock",
 		"favorites": favoriteStock,
 	})
 }
@@ -295,7 +289,7 @@ func (h userHandler) SignIn(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched user profile",
+		"message": "Successfully fetched user profile",
 		"user": user,
 	})
 }
@@ -321,7 +315,7 @@ func (h userHandler) GetUserTradingHistories(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched all transaction history",
+		"message": "Successfully fetched all transactions history",
 		"transactions": transactions,
 	})
 }
@@ -348,7 +342,7 @@ func (h userHandler) GetUserStockHistory(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched stock transaction",
+		"message": "Successfully fetched stock transaction",
 		"transactions": transactions,
 	})
 }
@@ -367,7 +361,7 @@ func (h userHandler) GetUserStockAmount(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched stock ratio",
+		"message": "Successfully fetched stock ratio",
 		"stockRatio": stockRatio,
 	})
 }
@@ -391,9 +385,9 @@ func (h userHandler) DeleteFavoriteStock(c *gin.Context) {
 }
 
 func (h userHandler) DeleteUserAccount(c *gin.Context) {
-	// uid := c.Locals("uid").(string)
+	uid := c.MustGet("uid").(string)
 
-	message, err := h.userService.DeleteUserAccount("test1")
+	message, err := h.userService.DeleteUserAccount(uid)
 	if err != nil {
 		c.JSON(400, gin.H{
 			"message": err.Error(),

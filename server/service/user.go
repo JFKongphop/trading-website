@@ -3,7 +3,7 @@ package service
 import "server/model"
 
 type CreateAccount = model.CreateAccount
-type UserResponse model.UserResponse
+type UserResponse = model.UserResponse
 type ResponseUserHistory = model.UserHistory
 type OrderRequest = model.OrderRequest
 type BalanceHistory = model.BalanceHistory

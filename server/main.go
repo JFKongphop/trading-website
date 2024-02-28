@@ -65,14 +65,14 @@ var uploader *model.ClientUploader
 
 func main() {
 	app := gin.Default()
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 
 	app.Use(cors.Default())
-	// app.Use(gin.Logger())
-	// app.Use(func(c *gin.Context) {
-	// 	c.Set("uid", "test12345")
-	// 	c.Next()
-	// })
+	app.Use(gin.Logger())
+	app.Use(func(c *gin.Context) {
+		c.Set("uid", "test12345")
+		c.Next()
+	})
 
 	hub := wshandler.H
 	go hub.Run()
