@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	// "io"
@@ -203,12 +202,15 @@ func TestCreateStockCollection(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, ErrPrice.Error())
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrPrice.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -282,7 +284,10 @@ func TestCreateStockOrder(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expectedMessage)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -341,12 +346,15 @@ func TestCreateStockOrder(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, ErrData.Error())
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -405,10 +413,7 @@ func TestGetAllStockCollections(t *testing.T) {
 			)
 		}
 
-		expectedJsonStockCollections, err := json.Marshal(expectedStockCollections)
-		if err != nil {
-			log.Println("Error marshalling JSON:", err)
-		}
+		expectedJsonStockCollections, _ := json.Marshal(expectedStockCollections)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","stocks":%v}`,
@@ -471,10 +476,7 @@ func TestGetTop10Stocks(t *testing.T) {
 			)
 		}
 
-		expectedJsonStockCollections, err := json.Marshal(expectedTopStocks)
-		if err != nil {
-			log.Println("Error marshalling JSON:", err)
-		}
+		expectedJsonStockCollections, _ := json.Marshal(expectedTopStocks)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","topStocks":%v}`,
@@ -548,10 +550,7 @@ func TestGetStockCollection(t *testing.T) {
 			)
 		}
 
-		expectedJsonStockCollections, err := json.Marshal(expectedStock)
-		if err != nil {
-			log.Println("Error marshalling JSON:", err)
-		}
+		expectedJsonStockCollections, _ := json.Marshal(expectedStock)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","stock":%v}`,
@@ -603,7 +602,10 @@ func TestGetStockCollection(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, ErrData.Error())
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -667,10 +669,7 @@ func TestGetStockHistory(t *testing.T) {
 			)
 		}
 
-		expectedJsonTransactions, err := json.Marshal(expectedTransactions)
-		if err != nil {
-			log.Println("Error marshalling JSON:", err)
-		}
+		expectedJsonTransactions, _ := json.Marshal(expectedTransactions)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","transactions":%v}`,
