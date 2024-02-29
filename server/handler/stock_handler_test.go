@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-
-	// "io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -31,8 +29,6 @@ type Graph = model.Graph
 type SetPriceRequest = model.SetPriceRequest
 type EditNameRequest = model.EditNameRequest
 type EditSignRequest = model.EditSignRequest
-
-
 
 var (
 	ErrPrice = errs.ErrPrice

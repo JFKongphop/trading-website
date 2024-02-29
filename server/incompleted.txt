@@ -1,0 +1,13 @@
+blog medium 
+- gin and fiber upload file
+- gin path param unit testing
+- gin unit testing
+- gin query param testing
+- gin FormData testing
+
+incompleted
+- change validate data from repository to service
+- create matching algorithm for stock
+- get all of user stock for create pie chart
+
+- create api documents

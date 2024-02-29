@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -43,7 +42,7 @@ func userPath(route string) string {
 }
 
 func TestSignUp(t *testing.T) {
-	expected := "Successfully created account"
+	expectedMessage := "Successfully created account"
 	url := userPath("signup")
 
 	t.Run("Successfully signup", func(t *testing.T) {
@@ -62,7 +61,7 @@ func TestSignUp(t *testing.T) {
 
 		userService.
 			On("CreateUserAccount", testBody).
-			Return(expected, nil)
+			Return(expectedMessage, nil)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -90,7 +89,10 @@ func TestSignUp(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expected)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -116,7 +118,7 @@ func TestSignUp(t *testing.T) {
 
 		userService.
 			On("CreateUserAccount", testBody).
-			Return(expected, ErrData)
+			Return(expectedMessage, ErrData)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -144,7 +146,10 @@ func TestSignUp(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -170,7 +175,7 @@ func TestSignUp(t *testing.T) {
 
 		userService.
 			On("CreateUserAccount", testBody).
-			Return(expected, ErrData)
+			Return(expectedMessage, ErrData)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -198,7 +203,10 @@ func TestSignUp(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -211,7 +219,7 @@ func TestSignUp(t *testing.T) {
 }
 
 func TestDepositBalance(t *testing.T) {
-	expected := "Successfully deposited money"
+	expectedMessage := "Successfully deposited money"
 	url := userPath("deposit")
 
 	t.Run("Successfully deposit", func(t *testing.T) {
@@ -227,7 +235,7 @@ func TestDepositBalance(t *testing.T) {
 
 		userService.
 			On("DepositBalance", userId, testBody.Balance).
-			Return(expected, nil)
+			Return(expectedMessage, nil)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -239,7 +247,7 @@ func TestDepositBalance(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -259,7 +267,10 @@ func TestDepositBalance(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expected)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -283,7 +294,7 @@ func TestDepositBalance(t *testing.T) {
 
 		userService.
 			On("DepositBalance", userId, testBody.Balance).
-			Return(expected, ErrMoney)
+			Return(expectedMessage, ErrMoney)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -295,7 +306,7 @@ func TestDepositBalance(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -315,7 +326,10 @@ func TestDepositBalance(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid money"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrMoney.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -328,7 +342,7 @@ func TestDepositBalance(t *testing.T) {
 }
 
 func TestWithdrawBalance(t *testing.T) {
-	expected := "Successfully withdrawed money"
+	expectedMessage := "Successfully withdrawed money"
 	url := userPath("withdraw")
 
 	t.Run("Successfully withdraw", func(t *testing.T) {
@@ -344,7 +358,7 @@ func TestWithdrawBalance(t *testing.T) {
 
 		userService.
 			On("WithdrawBalance", userId, testBody.Balance).
-			Return(expected, nil)
+			Return(expectedMessage, nil)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -356,7 +370,7 @@ func TestWithdrawBalance(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -376,7 +390,10 @@ func TestWithdrawBalance(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expected)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -400,7 +417,7 @@ func TestWithdrawBalance(t *testing.T) {
 
 		userService.
 			On("WithdrawBalance", userId, testBody.Balance).
-			Return(expected, ErrMoney)
+			Return(expectedMessage, ErrMoney)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -412,7 +429,7 @@ func TestWithdrawBalance(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -427,12 +444,15 @@ func TestWithdrawBalance(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid money"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrMoney.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -445,7 +465,7 @@ func TestWithdrawBalance(t *testing.T) {
 }
 
 func TestBuyStock(t *testing.T) {
-	expected := "Successfully bought stock"
+	expectedMessage := "Successfully bought stock"
 	url := userPath("buy")
 
 	t.Run("Successfully buy stock", func(t *testing.T) {
@@ -466,7 +486,7 @@ func TestBuyStock(t *testing.T) {
 
 		userService.
 			On("BuyStock", testBody).
-			Return(expected, nil)
+			Return(expectedMessage, nil)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -478,7 +498,7 @@ func TestBuyStock(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -498,7 +518,10 @@ func TestBuyStock(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expected)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -527,7 +550,7 @@ func TestBuyStock(t *testing.T) {
 
 		userService.
 			On("BuyStock", testBody).
-			Return(expected, ErrOrderMethod)
+			Return(expectedMessage, ErrOrderMethod)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -539,7 +562,7 @@ func TestBuyStock(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -554,12 +577,12 @@ func TestBuyStock(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid order method"}`
+		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, ErrOrderMethod.Error())
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -572,7 +595,7 @@ func TestBuyStock(t *testing.T) {
 }
 
 func TestSaleStock(t *testing.T) {
-	expected := "Successfully sold stock"
+	expectedMessage := "Successfully sold stock"
 	url := userPath("sale")
 
 	t.Run("Successfully sale stock", func(t *testing.T) {
@@ -593,7 +616,7 @@ func TestSaleStock(t *testing.T) {
 
 		userService.
 			On("SaleStock", testBody).
-			Return(expected, nil)
+			Return(expectedMessage, nil)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -605,7 +628,7 @@ func TestSaleStock(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -625,7 +648,10 @@ func TestSaleStock(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expected)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -654,7 +680,7 @@ func TestSaleStock(t *testing.T) {
 
 		userService.
 			On("SaleStock", testBody).
-			Return(expected, ErrOrderMethod)
+			Return(expectedMessage, ErrOrderMethod)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -666,7 +692,7 @@ func TestSaleStock(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -681,12 +707,15 @@ func TestSaleStock(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid order method"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrOrderMethod.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -699,7 +728,7 @@ func TestSaleStock(t *testing.T) {
 }
 
 func TestSetFavoriteStock(t *testing.T) {
-	expected := "Successfully set favorite stock"
+	expectedMessage := "Successfully set favorite stock"
 	url := userPath("set-favorite")
 
 	t.Run("Successfully set favorite stock", func(t *testing.T) {
@@ -715,7 +744,7 @@ func TestSetFavoriteStock(t *testing.T) {
 
 		userService.
 			On("SetFavoriteStock", userId, testBody.StockId).
-			Return(expected, nil)
+			Return(expectedMessage, nil)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -727,7 +756,7 @@ func TestSetFavoriteStock(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -747,7 +776,10 @@ func TestSetFavoriteStock(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expected)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -771,7 +803,7 @@ func TestSetFavoriteStock(t *testing.T) {
 
 		userService.
 			On("SetFavoriteStock", userId, testBody.StockId).
-			Return(expected, ErrInvalidStock)
+			Return(expectedMessage, ErrInvalidStock)
 
 		userHandler := handler.NewUserHandler(userService, stockService)
 
@@ -783,7 +815,7 @@ func TestSetFavoriteStock(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -798,12 +830,15 @@ func TestSetFavoriteStock(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid stock"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrInvalidStock.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -839,7 +874,7 @@ func TestGetUserBalance(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -893,13 +928,13 @@ func TestGetUserBalance(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
 		recorder := httptest.NewRecorder()
 		router.Use(func(c *gin.Context) {
-			c.Set("uid", "test12345")
+			c.Set("uid", "")
 		})
 
 		router.GET(url, userHandler.GetUserBalance)
@@ -913,7 +948,10 @@ func TestGetUserBalance(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid user"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrUser.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -984,11 +1022,7 @@ func TestGetUserBalanceHistory(t *testing.T) {
 			)
 		}
 
-		expectedJsonTransactions, err := json.Marshal(expectedTransactions)
-		if err != nil {
-			fmt.Println("Error marshalling JSON:", err)
-			return
-		}
+		expectedJsonTransactions, _ := json.Marshal(expectedTransactions)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","transactions":%v}`,
@@ -1024,7 +1058,7 @@ func TestGetUserBalanceHistory(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1044,7 +1078,10 @@ func TestGetUserBalanceHistory(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1093,12 +1130,15 @@ func TestGetUserBalanceHistory(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid order method"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrOrderMethod.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1147,7 +1187,7 @@ func TestGetUserFavoriteStock(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1159,11 +1199,7 @@ func TestGetUserFavoriteStock(t *testing.T) {
 		router.GET(url, userHandler.GetUserFavoriteStock)
 		router.ServeHTTP(recorder, req)
 
-		expectedJsonFavoriteStock, err := json.Marshal(returnFavoriteStock)
-		if err != nil {
-			fmt.Println("Error marshalling JSON:", err)
-			return
-		}
+		expectedJsonFavoriteStock, _ := json.Marshal(returnFavoriteStock)
 
 		if recorder.Code != http.StatusOK {
 			t.Errorf(
@@ -1211,7 +1247,7 @@ func TestGetUserFavoriteStock(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1226,12 +1262,15 @@ func TestGetUserFavoriteStock(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid user"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrUser.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1265,7 +1304,7 @@ func TestGetUserFavoriteStock(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1280,12 +1319,15 @@ func TestGetUserFavoriteStock(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid stock"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrInvalidStock.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1331,7 +1373,7 @@ func TestSignIn(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1351,11 +1393,7 @@ func TestSignIn(t *testing.T) {
 			)
 		}
 
-		expectedJsonUser, err := json.Marshal(expectedProfile)
-		if err != nil {
-			fmt.Println("Error marshalling JSON:", err)
-			return
-		}
+		expectedJsonUser, _ := json.Marshal(expectedProfile)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","user":%s}`,
@@ -1395,7 +1433,7 @@ func TestSignIn(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1407,12 +1445,15 @@ func TestSignIn(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1481,11 +1522,7 @@ func TestGetUserTradingHistories(t *testing.T) {
 			)
 		}
 
-		expectedJsonTransactions, err := json.Marshal(expectedTransactions)
-		if err != nil {
-			fmt.Println("Error marshalling JSON:", err)
-			return
-		}
+		expectedJsonTransactions, _ := json.Marshal(expectedTransactions)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","transactions":%v}`,
@@ -1536,12 +1573,15 @@ func TestGetUserTradingHistories(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1611,11 +1651,7 @@ func TestGetUserStockHistory(t *testing.T) {
 			)
 		}
 
-		expectedJsonTransactions, err := json.Marshal(expectedTransactions)
-		if err != nil {
-			fmt.Println("Error marshalling JSON:", err)
-			return
-		}
+		expectedJsonTransactions, _ := json.Marshal(expectedTransactions)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","transactions":%v}`,
@@ -1663,12 +1699,15 @@ func TestGetUserStockHistory(t *testing.T) {
 		router.GET(path, userHandler.GetUserStockHistory)
 		router.ServeHTTP(recorder, req)
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
@@ -1720,12 +1759,15 @@ func TestGetUserStockHistory(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1787,11 +1829,7 @@ func TestGetUserStockAmount(t *testing.T) {
 			)
 		}
 
-		expectedJsonStockRatio, err := json.Marshal(expectedStockRatio)
-		if err != nil {
-			fmt.Println("Error marshalling JSON:", err)
-			return
-		}
+		expectedJsonStockRatio, _ := json.Marshal(expectedStockRatio)
 
 		expectedResponseBody := fmt.Sprintf(
 			`{"message":"%s","stockRatio":%v}`,
@@ -1845,12 +1883,15 @@ func TestGetUserStockAmount(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := `{"message":"invalid data"}`
+		expectedResponseBody :=  fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrData.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1908,7 +1949,10 @@ func TestDeleteFavoriteStock(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expectedMessage)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -1961,7 +2005,10 @@ func TestDeleteFavoriteStock(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, ErrInvalidStock.Error())
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrInvalidStock.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -2016,7 +2063,10 @@ func TestDeleteUserAccount(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expectedMessage)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -2061,12 +2111,15 @@ func TestDeleteUserAccount(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, ErrUser.Error())
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			ErrUser.Error(),
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
