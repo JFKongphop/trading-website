@@ -101,6 +101,60 @@ func TestSignUp(t *testing.T) {
 		}
 	})
 
+		t.Run("Error on service create user account", func(t *testing.T) {
+		gin.SetMode(gin.TestMode)
+		router := gin.Default()
+
+		userService := service.NewUserServiceMock()
+		stockService := service.NewStockServiceMock()
+
+		testBody := CreateAccount{
+			UID:          "123",
+			ProfileImage: "test.jpg",
+			Email:        "test@example.com",
+		}
+
+		userService.
+			On("CreateUserAccount", testBody).
+			Return(expected, ErrData)
+
+		userHandler := handler.NewUserHandler(userService, stockService)
+
+		jsonBody, _ := json.Marshal(testBody)
+
+		req, err := http.NewRequest(
+			"POST",
+			url,
+			bytes.NewBuffer(jsonBody),
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req.Header.Set("Content-Type", "application/json")
+		recorder := httptest.NewRecorder()
+		router.POST(url, userHandler.SignUp)
+		router.ServeHTTP(recorder, req)
+
+		if recorder.Code != http.StatusBadRequest {
+			t.Errorf(
+				"Expected status code %d, got %d",
+				http.StatusBadRequest,
+				recorder.Code,
+			)
+		}
+
+		expectedResponseBody := `{"message":"invalid data"}`
+
+		if recorder.Body.String() != expectedResponseBody {
+			t.Errorf(
+				"Expected response body %s, got %s",
+				expectedResponseBody,
+				recorder.Body.String(),
+			)
+		}
+	})
+
 	t.Run("Error on service create user account", func(t *testing.T) {
 		gin.SetMode(gin.TestMode)
 		router := gin.Default()

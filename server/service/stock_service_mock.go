@@ -47,7 +47,7 @@ func (m *stockServiceMock) GetStockHistory(stockHistory string) ([]StockHistoryR
 
 func (m *stockServiceMock) GetStockPrice(stockId string) (float64, error) {
 	arge := m.Called(stockId)
-	return float64(arge.Int(0)), arge.Error(1)
+	return arge.Get(0).(float64), arge.Error(1)
 }
 
 func (m *stockServiceMock) GetStockGraph(stockId string) ([]Graph, error) {

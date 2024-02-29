@@ -17,31 +17,16 @@ type stockHandler struct {
 
 type StockCollectionRequest = model.StockCollectionRequest
 type StockHistory = model.StockHistory
+type CreateStockRequest = model.CreateStockRequest
+type SetPriceRequest = model.SetPriceRequest
+type CreateOrderRequest = model.CreateOrderRequest
+type EditNameRequest = model.EditNameRequest
+type EditSignRequest = model.EditSignRequest
 
-type CreateStockRequest struct {
-	Name  string  `json:"name"`
-	Sign  string  `json:"sign"`
-	Price float64 `json:"price"`
-}
-
-type SetPriceRequest struct {
-	Price float64 `json:"price"`
-}
-
-type CreateOrderRequest struct {
-	Amount float64 `json:"amount"`
-	Price  float64 `json:"price"`
-}
-
-type EditNameRequest struct {
-	Name string `json:"name"`
-}
-
-type EditSignRequest struct {
-	Sign string `json:"sign"`
-}
-
-var ErrData = errs.ErrData
+var (
+	ErrData  = errs.ErrData
+	ErrPrice = errs.ErrPrice
+)
 
 func NewStockHandler(stockService service.StockService) stockHandler {
 	return stockHandler{stockService}
@@ -51,7 +36,7 @@ func (h stockHandler) CreateStockCollection(c *gin.Context) {
 	file, err := c.FormFile("stock_image")
 
 	if err != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"message": "invalid file",
 		})
 
@@ -61,8 +46,8 @@ func (h stockHandler) CreateStockCollection(c *gin.Context) {
 	priceStr := c.PostForm("price")
 	price, err := strconv.ParseFloat(priceStr, 64)
 	if err != nil {
-		c.JSON(200, gin.H{
-			"message": "invalid price",
+		c.JSON(400, gin.H{
+			"message": ErrPrice.Error(),
 		})
 
 		return
@@ -70,7 +55,7 @@ func (h stockHandler) CreateStockCollection(c *gin.Context) {
 
 	blobFile, err := file.Open()
 	if err != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"message": "invalid file",
 		})
 
@@ -86,7 +71,7 @@ func (h stockHandler) CreateStockCollection(c *gin.Context) {
 
 	message, err := h.stockService.CreateStockCollection(stock)
 	if err != nil {
-		c.JSON(200, gin.H{
+		c.JSON(400, gin.H{
 			"message": err.Error(),
 		})
 
@@ -142,7 +127,7 @@ func (h stockHandler) GetAllStockCollections(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched all stocks",
+		"message": "Successfully fetched all stocks",
 		"stocks":  stocks,
 	})
 }
@@ -158,7 +143,7 @@ func (h stockHandler) GetTop10Stocks(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message":   "successfully fetched top volume stock",
+		"message":   "Successfully fetched top volume stock",
 		"topStocks": topStocks,
 	})
 }
@@ -176,7 +161,7 @@ func (h stockHandler) GetStockCollection(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "successfully fetched stock",
+		"message": "Successfully fetched stock",
 		"stock":   stock,
 	})
 }
@@ -194,7 +179,7 @@ func (h stockHandler) GetStockHistory(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message":      "successfully fetched transactions",
+		"message":      "Successfully fetched transactions",
 		"transactions": transactions,
 	})
 }
@@ -231,7 +216,7 @@ func (h stockHandler) GetStockGraph(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"message": "Successfully fetched stock graph",
-		"graph": graph,
+		"graph":   graph,
 	})
 }
 

@@ -73,3 +73,26 @@ type Graph struct {
 	X int64 `json:"x"`
 	Y []float64 `json:"y"` 
 }
+
+type CreateStockRequest struct {
+	Name  string  `json:"name"`
+	Sign  string  `json:"sign"`
+	Price float64 `json:"price"`
+}
+
+type SetPriceRequest struct {
+	Price float64 `json:"price"`
+}
+
+type CreateOrderRequest struct {
+	Amount float64 `json:"amount"`
+	Price  float64 `json:"price"`
+}
+
+type EditNameRequest struct {
+	Name string `json:"name"`
+}
+
+type EditSignRequest struct {
+	Sign string `json:"sign"`
+}
