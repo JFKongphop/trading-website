@@ -61,7 +61,7 @@ func TestCreateStockCollection(t *testing.T) {
 
 		file, err := os.Open("test.png")
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 		defer file.Close()
 
@@ -79,7 +79,7 @@ func TestCreateStockCollection(t *testing.T) {
 			body,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -96,7 +96,10 @@ func TestCreateStockCollection(t *testing.T) {
 			)
 		}
 
-		expectedResponseBody := fmt.Sprintf(`{"message":"%s"}`, expectedMessage)
+		expectedResponseBody := fmt.Sprintf(
+			`{"message":"%s"}`, 
+			expectedMessage,
+		)
 
 		if recorder.Body.String() != expectedResponseBody {
 			t.Errorf(
@@ -128,7 +131,7 @@ func TestCreateStockCollection(t *testing.T) {
 			body,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -140,7 +143,7 @@ func TestCreateStockCollection(t *testing.T) {
 		if recorder.Code != http.StatusBadRequest {
 			t.Errorf(
 				"Expected status code %d, got %d",
-				http.StatusOK,
+				http.StatusBadRequest,
 				recorder.Code,
 			)
 		}
@@ -170,7 +173,7 @@ func TestCreateStockCollection(t *testing.T) {
 
 		file, err := os.Open("test.png")
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 		defer file.Close()
 
@@ -188,7 +191,7 @@ func TestCreateStockCollection(t *testing.T) {
 			body,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -253,7 +256,7 @@ func TestCreateStockOrder(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -323,7 +326,7 @@ func TestCreateStockOrder(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -386,7 +389,7 @@ func TestGetAllStockCollections(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -519,7 +522,7 @@ func TestGetStockCollection(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -584,7 +587,7 @@ func TestGetStockCollection(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -640,7 +643,7 @@ func TestGetStockHistory(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -703,7 +706,7 @@ func TestGetStockHistory(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -757,7 +760,7 @@ func TestGetStockPrice(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -815,7 +818,7 @@ func TestGetStockPrice(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -874,7 +877,7 @@ func TestGetStockGraph(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -900,7 +903,7 @@ func TestGetStockGraph(t *testing.T) {
 
 		expectedJsonGraph, err := json.Marshal(expectedGraph)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		expectedResponseBody := fmt.Sprintf(
@@ -937,7 +940,7 @@ func TestGetStockGraph(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -996,7 +999,7 @@ func TestSetStockPrice(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1060,7 +1063,7 @@ func TestSetStockPrice(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1120,7 +1123,7 @@ func TestEditStockName(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1184,7 +1187,7 @@ func TestEditStockName(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1244,7 +1247,7 @@ func TestEditStockSign(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1308,7 +1311,7 @@ func TestEditStockSign(t *testing.T) {
 			bytes.NewBuffer(jsonBody),
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		req.Header.Set("Content-Type", "application/json")
@@ -1362,7 +1365,7 @@ func TestDeleteStockCollection(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
@@ -1419,7 +1422,7 @@ func TestDeleteStockCollection(t *testing.T) {
 			nil,
 		)
 		if err != nil {
-			log.Fatal(err)
+			t.Fatalf("failed to create request: %v", err)
 		}
 
 		recorder := httptest.NewRecorder()
