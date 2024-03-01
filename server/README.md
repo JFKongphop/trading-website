@@ -56,7 +56,7 @@ POST /api/v1/user/signup
 #
 
 ### Deposit
-deposit money for trading stock
+deposit money for trading stock.
 ```http
 POST /api/v1/user/deposit
 ```
@@ -70,6 +70,73 @@ POST /api/v1/user/deposit
 ```javascript
 {
   "message": "Successfully deposited money"
+}
+```
+#
+
+### Withdraw
+withdraw money.
+```http
+POST /api/v1/user/withdraw
+```
+#### Request body
+```javascript
+{
+  "balance": int
+}
+```
+### Response
+```javascript
+{
+  "message": "Successfully withdrawed money"
+}
+```
+#
+
+### Buy
+Buy stock.
+```http
+POST /api/v1/user/buy
+```
+#### Request body
+```javascript
+{
+	"stockId": string,
+	"userId": string,
+	"price": int,
+	"amount": int
+	"orderType": string, // order | auto
+	"orderMethod": string // buy | sale
+}
+```
+### Response
+```javascript
+{
+  "message": "Successfully bought stock"
+}
+```
+#
+
+### Sale
+Sale stock.
+```http
+POST /api/v1/user/sale
+```
+#### Request body
+```javascript
+{
+	"stockId": string,
+	"userId": string,
+	"price": int,
+	"amount": int
+	"orderType": string, // order | auto
+	"orderMethod": string // buy | sale
+}
+```
+### Response
+```javascript
+{
+  "message": "Successfully sold stock"
 }
 ```
 #
