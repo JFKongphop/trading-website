@@ -339,8 +339,6 @@ DELETE /api/v1/user/delete-account
 
 ## Stock
 
-#
-
 ### Create Stock
 create stock collection.
 ```http
