@@ -16,6 +16,22 @@
 * [Delete Favorite](#delete-favorite)
 * [Delete Account](#delete-account)
 
+# Stock
+* [Create Stock](#create-stock)
+* [Create Order](#create-order)
+* [Stock Collections](#collections)
+* [Top Stocks](#top-stocks)
+* [Stock Collection](#collection)
+* [Transaction](#transaction)
+* [Price](#price)
+* [Graph](#graph)
+* [Set Price](#set-price)
+* [Edit Name](#edit-name)
+* [Edit Sign](#edit-sign)
+* [Delete Stock Collection](#delete-stock)
+
+#
+
 ### Signup
 singup for create new user.
 ```http
