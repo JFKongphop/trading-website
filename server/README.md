@@ -16,7 +16,7 @@
 * [Delete Favorite](#delete-favorite)
 * [Delete Account](#delete-account)
 
-# Stock
+## Stock
 * [Create Stock](#create-stock)
 * [Create Order](#create-order)
 * [Stock Collections](#collections)
@@ -51,6 +51,25 @@ POST /api/v1/user/signup
 ```javascript
 {
   "message": "Successfully created account"
+}
+```
+#
+
+### Deposit
+deposit money for trading stock
+```http
+POST /api/v1/user/deposit
+```
+#### Request body
+```javascript
+{
+  "balance": int
+}
+```
+### Response
+```javascript
+{
+  "message": "Successfully deposited money"
 }
 ```
 #
