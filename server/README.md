@@ -23,12 +23,16 @@
 * [Top Stocks](#top-stocks)
 * [Stock Collection](#collection)
 * [Transaction](#transaction)
-* [Price](#price)
-* [Graph](#graph)
+* [Get Price](#get-price)
+* [Get Graph](#get-graph)
 * [Set Price](#set-price)
 * [Edit Name](#edit-name)
 * [Edit Sign](#edit-sign)
 * [Delete Stock Collection](#delete-stock)
+
+#
+
+## User
 
 #
 
@@ -332,3 +336,240 @@ DELETE /api/v1/user/delete-account
 }
 ```
 #
+
+## Stock
+
+#
+
+### Create Stock
+create stock collection.
+```http
+POST /api/v1/stock/create-stock
+```
+#### Request
+| Key          | Value         |
+|--------------|---------------|
+| stockImage   | filename.jpg  |
+| price        | 1.1           |
+| name         | test          |
+| sign         | t             |
+
+#### Response
+```javascript
+{
+  "message": "Successfully created stock collection"
+}
+```
+#
+
+### Create Order
+create stock order.
+```http
+POST /api/v1/stock/create-order/:stockId
+```
+#### Request
+```javascript
+{
+  "amount": 2,
+  "price": 10
+}
+```
+#### Response
+```javascript
+{
+  "message": "Successfully created stock collection"
+}
+```
+#
+
+### Stock Collections
+get collections.
+```http
+GET /api/v1/stock/collections
+```
+#### Response
+```javascript
+{
+  "message": "Successfully fetched all stocks",
+  "stocks": [
+    {
+      "id": string,
+      "stockImage": string,
+      "name": string,
+      "sign": string,
+      "price": int
+    },
+  ]
+}
+```
+#
+
+### Top Stock
+get top 10 stock collections.
+```http
+GET /api/v1/stock/top-stocks
+```
+#### Response
+```javascript
+{
+  "message": "Successfully fetched top volume stock",
+  "topStocks": [
+    {
+      "id": string,
+      "sign": string,
+      "price": int
+    }
+  ]
+}
+```
+#
+
+### Stock Collection
+get collection by stockId.
+```http
+GET /api/v1/stock/collection/:stockId
+```
+#### Response
+```javascript
+{
+  "message": "Successfully fetched stock",
+  "stock": {
+    "id": string,
+    "stockImage": string,
+    "name": string,
+    "sign": string,
+    "price": int
+  }
+}
+```
+#
+
+### Transaction
+get transaction stock
+```http
+GET /api/v1/stock/transaction/:stockId
+```
+#### Response
+```javascript
+{
+  "message": "Successfully fetched transactions",
+  "transactions": [
+    {
+      "amount": int,
+      "price": int
+    },
+    {
+      "amount": int,
+      "price": int
+    }
+  ]
+}
+```
+#
+
+### Get Price
+get price stock
+```http
+GET /api/v1/stock/price/:stockId
+```
+#### Response
+```javascript
+{
+  "message": "Successfully fetched transactions",
+  "price": int
+}
+```
+#
+
+### Get Graph
+get price stock
+```http
+GET /api/v1/stock/garph/:stockId
+```
+#### Response
+```javascript
+{
+  "graph": [
+    {
+      "x": int,
+      "y": [int, int,int, int]
+    },
+    {
+      "x": int,
+      "y": [int, int,int, int]
+    },
+  ]
+  "message": "Successfully fetched stock graph"
+}
+```
+#
+
+### Set Price
+set price stock
+```http
+POST /api/v1/stock/set-price/:stockId
+```
+#### Request
+```javascript
+{
+  "price": 11.1
+}
+```
+#### Response
+```javascript
+{
+  "message": "Successfully set price"
+}
+```
+#
+
+### Edit Name
+edit name stock
+```http
+POST /api/v1/stock/edit-name/:stockId
+```
+#### Request
+```javascript
+{
+  "name": "test"
+}
+```
+#### Response
+```javascript
+{
+  "message": "Successfully updated name"
+}
+```
+#
+
+### Edit Sign
+edit sign stock
+```http
+POST /api/v1/stock/edit-ign/:stockId
+```
+#### Request
+```javascript
+{
+  "sign": "t"
+}
+```
+#### Response
+```javascript
+{
+  "message": "Successfully updated sign"
+}
+```
+#
+
+### Delete Stock Collection
+delete stock colllection
+```http
+DELETE /api/v1/stock/delete/:stockId
+```
+#### Response
+```javascript
+{
+  "message": "Successfully deleted stock"
+}
+```
+
